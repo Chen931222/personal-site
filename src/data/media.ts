@@ -177,7 +177,7 @@ export function ratioOf(webPath: string | null, fallback: string): string {
 import { PROJECTS, type Project } from './projects';
 import { SITE, type Shot } from './site';
 
-/** 13 筆作品，影片／首格／縮圖用檔名自動補上。資料檔裡寫死的值優先。 */
+/** 作品清單，影片／首格／縮圖用檔名自動補上。資料檔裡寫死的值優先。 */
 export const WORKS: Project[] = PROJECTS.map((p) => ({
   ...p,
   video: p.video ?? findVideo(p.slug),

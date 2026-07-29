@@ -18,7 +18,7 @@ import { SITE } from '../data/site';
 import { WORKS as PROJECTS } from '../data/media';
 import Placeholder from './Placeholder.astro';
 
-// 13 個作品交錯分成兩列，左右看起來才不一樣
+// 作品交錯分成兩列，左右看起來才不一樣（件數不寫死，跟著 projects.ts 走）
 const left = PROJECTS.filter((_, i) => i % 2 === 0);
 const right = PROJECTS.filter((_, i) => i % 2 === 1);
 // 各複製兩份 → 位移 -50% 剛好無縫接回

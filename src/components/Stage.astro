@@ -172,7 +172,10 @@ const total = String(PROJECTS.length).padStart(2, '0');
 
       <p class="gate__foot mono">
         <span class="gate__foot-l"><span data-counter>01</span>.</span>
-        <span class="gate__foot-c" data-title>BOOKSHELF</span>
+        {/* 首格標題：JS 接手後會改寫，但寫死的初值會在作品增刪後變成鬼影
+            （原本寫死的那個字，指向的作品後來被撤下了）—— 取第一件才永遠對得上。
+            另外：這裡要用大括號註解，HTML 註解會被原封不動印進頁面。 */}
+        <span class="gate__foot-c" data-title>{PROJECTS[0].latin}</span>
         <span class="gate__foot-r">.{total}</span>
       </p>
     </div>

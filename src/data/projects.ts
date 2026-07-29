@@ -87,41 +87,10 @@ export const PROJECTS: Project[] = [
     video: null,
     cat: '展示',
   },
-  {
-    slug: 'bookshelf',
-    name: '書櫃',
-    latin: 'BOOKSHELF',
-    kind: '實體藏書',
-    short: '書櫃',
-    // 119 = 站上六個櫃自己的標頭相加（46+21+21+11+12+8），2026-07-27 實測。
-    // 原本寫 122，是從 room 繼承下來的舊數字。作品集上的數字是訪客
-    // 點進去就能當場數的，寫錯比不寫更傷。
-    desc: '119 冊、六類分櫃，逐本建檔，而且可以留言。',
-    status: 'live',
-    href: 'https://bookshelf-nine-gamma.vercel.app/',
-    year: 2026,
-    tags: ['建檔', '藏書', '留言'],
-    cover: null,
-    still: null,
-    video: null,
-    cat: '建檔',
-  },
-  {
-    slug: 'record-shelf',
-    name: '唱片架',
-    latin: 'RECORD SHELF',
-    kind: '實體專輯',
-    short: '唱片架',
-    desc: '22 張專輯，接 iTunes 試聽。買了就不會被下架。',
-    status: 'live',
-    href: 'https://record-shelf-nine.vercel.app',
-    year: 2026,
-    tags: ['建檔', '音樂', '試聽'],
-    cover: null,
-    still: null,
-    video: null,
-    cat: '建檔',
-  },
+  // 書櫃（bookshelf）與唱片架（record-shelf）於 2026-07-29 從作品集撤下。
+  // 站還在線上，只是不列為作品 —— 兩者的版面語彙都來自別人的站，
+  // 不是自己想出來的東西，放在作品集裡等於拿別人的點子當自己的招牌。
+  // 素材（public/media/bookshelf.*、record-shelf.*）與錄影腳本都留著，要復原就把資料補回這裡。
   {
     slug: 'wardrobe',
     name: '我的衣櫃',
@@ -136,7 +105,10 @@ export const PROJECTS: Project[] = [
     cover: null,
     still: null,
     video: null,
-    cat: '建檔',
+    // 原本是「建檔」。書櫃與唱片架撤下後，那一類只剩這一件 ——
+    // 照本檔案自己的規矩，只篩得出一件的選項不是篩選，是噪音。
+    // 「建檔」這個字沒有消失：它還在上面的 tags 裡，也還是關於我那段的主詞。
+    cat: '展示',
   },
   {
     slug: 'cpe49',
@@ -291,7 +263,7 @@ export const PROJECTS: Project[] = [
 
 /**
  * 底部篩選列的選項：從實際資料統計，不是寫死的清單。
- * 舞台與 /work 都吃同一批 13 件 —— SLIDER 與 LIST 是同一份東西的兩種看法，
+ * 舞台與 /work 都吃同一批作品 —— SLIDER 與 LIST 是同一份東西的兩種看法，
  * 不是兩份不同的清單。
  */
 export const CATS = (() => {
