@@ -9,6 +9,12 @@ export default defineConfig({
   site: 'https://personal-site-tan-alpha.vercel.app',
   output: 'static',
 
+  // /journal 撤下、由 /method 接手（2026-07-29）。轉址留著：
+  // 舊連結可能已經被人存起來，斷連結比多一條設定貴。
+  redirects: {
+    '/journal': '/method',
+  },
+
   // 拉丁 display 與 mono 自架（build 時下載、預載入，零外部請求、零 FOUT）。
   // 中文襯線走 Google CDN —— CJK 字檔太大，需要 Google 的 unicode-range 分段下載。
   fonts: [

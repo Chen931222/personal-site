@@ -1,0 +1,219 @@
+---
+/**
+ * 方法 —— 第二大腦的窗口。
+ *
+ * 為什麼有這一頁：作品頁證明「他會做網站」，但回答不了「一個大二生怎麼
+ * 在一個暑假前後生出這麼多站」。答案是一套工作方式，不是手速 ——
+ * 它原本在作品輪播裡佔一格（點不進去的「第二大腦」），一格講不完，
+ * 也不該跟作品混在一起：它不是一件作品，是做出所有作品的方法。
+ *
+ * 這一頁取代了遊記（/journal）。遊記掛了兩天都是空帳 ——
+ * 空頁面比沒有這一頁更傷，先撤下，帳開始記了再回來。
+ *
+ * ⚠️ 頁上的數字（筆記篇數、管線數）是 2026-07 底實際數的，vault 會一直長。
+ *    數字舊了就重數一次再改 —— 寧可少寫一項，不寫一個對不上的數。
+ */
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+
+/** 五個支柱。code 是 mono 索引（跟遊記的國碼、作品的 [WORK] 同一個聲音）。 */
+const ROWS = [
+  {
+    code: 'MD',
+    title: '資料夾即應用',
+    latin: 'PLAIN FILES',
+    desc: '整座腦是一個資料夾裡的純 Markdown，現在是 73 篇。Obsidian 負責看，AI 直接讀寫；哪天哪個工具倒了，檔案都還是我的。',
+  },
+  {
+    code: 'NAV',
+    title: '兩層導航',
+    latin: 'TWO-LAYER MAP',
+    desc: 'AI 進來先讀一張總地圖，決定要動哪個資料夾，再讀那個資料夾自己的索引。一次只開真正需要的那幾篇，不是每次把整座腦掃一遍。',
+  },
+  {
+    code: 'CTX',
+    title: '先讀我是誰',
+    latin: 'CONTEXT FIRST',
+    desc: '七份 context 檔寫著我的品味、目標與禁區——做網站有一份、看盤有一份。動工前先讀對的那份，產出才會像我，不是預設值的 AI。',
+  },
+  {
+    code: 'IN',
+    title: '六條輸入管線',
+    latin: 'INTAKE',
+    desc: '路上想到的用語音丟進收件匣，網頁用剪藏存全文，紙本書拍照 OCR。捕捉必須零費力——回到電腦，一個指令歸檔。',
+  },
+  {
+    code: 'LOG',
+    title: '每日交接',
+    latin: 'HANDOFF',
+    desc: '每段工作結束，AI 把做了什麼、決定了什麼、卡在哪，寫進當天的日誌。明天的 AI 只讀最近幾天，不必重新認識我一次。',
+  },
+];
+---
+
+<Base title="方法" description="做出這些網站的方法：一座本地的 Markdown 知識庫，加上讀得懂它的 AI。">
+  <header class="wrap head">
+    <p class="mono">[ METHOD ]</p>
+    <h1 class="t-display head__h">第二<br /><em class="head__ac">大腦</em></h1>
+    <p class="t-lede head__lede">
+      站上每一件作品的背後是同一套工作方式：<br />
+      一座放在自己硬碟裡的知識庫，加上讀得懂它的 AI。
+    </p>
+
+    <div class="head__stats">
+      <p class="mono"><span class="dot dot--live" aria-hidden="true" />73 篇筆記</p>
+      <p class="mono"><span class="dot" aria-hidden="true" />07 份 CONTEXT</p>
+      <p class="mono"><span class="dot" aria-hidden="true" />06 條管線</p>
+      <p class="mono head__span">2026-07 實測</p>
+    </div>
+  </header>
+
+  <section class="wrap ledger">
+    <ol class="rows">
+      {
+        ROWS.map((r, i) => (
+          <li class="row">
+            <div class="row__in">
+              <span class="mono row__num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="mono row__code">{r.code}</span>
+              <span class="row__body">
+                <span class="row__t t-title">
+                  {r.title}
+                  <span class="mono row__latin">{r.latin}</span>
+                </span>
+                <span class="row__note t-body">{r.desc}</span>
+              </span>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="wrap tail">
+    <!-- 出處寫明白：方法的起點是別人的教學，長成現在這樣是自己用出來的。
+         這站的收錄判準（有沒有自己解掉的問題）對這一頁同樣適用。 -->
+    <p class="t-body tail__p">
+      起點是一支別人的教學影片；兩層導航、先讀我是誰、每日交接，是自己一天一天用出來的。
+      這個網站的文案、數字與待補清單，都是從這座腦裡長出來的。
+    </p>
+    <p class="t-body">
+      <a class="lnk" href="/work">看它長出了什麼 →</a>
+      <a class="lnk tail__mail" href={`mailto:${SITE.contact.email}`}>或寫信問我 →</a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding-block: var(--s6) var(--s6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s3);
+  }
+
+  .head__h {
+    margin-top: var(--s2);
+  }
+
+  .head__ac {
+    font-style: italic;
+    color: var(--red);
+  }
+
+  .head__lede {
+    margin-top: var(--s3);
+    color: var(--paper-64);
+  }
+
+  .head__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s3) var(--s5);
+    margin-top: var(--s3);
+  }
+
+  .head__stats p {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    min-height: 24px;
+  }
+
+  .head__span {
+    color: var(--paper-38);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- 五列 ---------------------------------------------------------------- */
+
+  .ledger {
+    padding-bottom: var(--s6);
+  }
+
+  .row + .row .row__in {
+    border-top: 1px solid var(--paper-08);
+  }
+
+  .row__in {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: var(--s2) var(--s4);
+    align-items: baseline;
+    padding-block: var(--s4);
+  }
+
+  .row__num {
+    color: var(--paper-38);
+  }
+
+  .row__code {
+    color: var(--paper);
+    letter-spacing: 0.14em;
+    /* 三個字母的欄寬對齊：MD、NAV、CTX 長短不一，
+       不鎖寬的話五列的正文會排不成一條垂直線 */
+    min-width: 3ch;
+  }
+
+  .row__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    min-width: 0;
+  }
+
+  .row__t {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--s3);
+  }
+
+  .row__latin {
+    color: var(--paper-38);
+  }
+
+  .row__note {
+    color: var(--paper-64);
+    max-width: 54ch;
+  }
+
+  /* --- 收尾 ---------------------------------------------------------------- */
+
+  .tail {
+    padding-block: var(--s5) var(--s7);
+    border-top: 1px solid var(--paper-18);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s3);
+    color: var(--paper-64);
+  }
+
+  .tail__p {
+    max-width: 56ch;
+  }
+
+  .tail__mail {
+    margin-left: var(--s4);
+  }
+</style>

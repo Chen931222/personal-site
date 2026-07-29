@@ -213,22 +213,8 @@ export const PROJECTS: Project[] = [
     video: null,
     cat: '分析',
   },
-  {
-    slug: 'second-brain',
-    name: '第二大腦',
-    latin: 'SECOND BRAIN',
-    kind: '進行中 · 不公開',
-    short: '第二大腦',
-    desc: '把每一次跟 AI 的工作紀錄蒸餾成按需讀取的本地知識庫。這個網站的內容就是從那裡長出來的。',
-    status: 'private',
-    href: null,
-    year: 2026,
-    tags: ['知識庫', 'Obsidian', '不公開'],
-    cover: null,
-    still: null,
-    video: null,
-    cat: '工具',
-  },
+  // 第二大腦（second-brain）2026-07-29 移出作品清單：它不是一件作品，是做出所有作品的
+  // 方法，而且點不進去（不公開）。現在它有自己的一頁 /method，講的比一格輪播多得多。
 ];
 
 /**
