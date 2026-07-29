@@ -135,7 +135,7 @@ export const PROJECTS: Project[] = [
     kind: '拼場共租平台',
     short: 'OASIS 綠洲',
     // 文案取自站主自己寫的 README 第一段：「想用一個空間，但一個人租太貴。」
-    desc: '想用練團室但一個人租太貴——發起拼場，揪人、分攤、排程讓平台喬好。大二的期末專題，56 個測試、CI，一路做到上線。',
+    desc: '想用練團室但一個人租太貴——發起拼場，揪人、分攤、排程讓平台喬好。大二的期末專題，57 個測試、CI，一路做到上線。',
     status: 'live',
     href: 'https://oasis-green.onrender.com',
     year: 2026,
