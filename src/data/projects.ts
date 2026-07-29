@@ -87,10 +87,12 @@ export const PROJECTS: Project[] = [
     video: null,
     cat: '展示',
   },
-  // 書櫃（bookshelf）與唱片架（record-shelf）於 2026-07-29 從作品集撤下。
-  // 站還在線上，只是不列為作品 —— 兩者的版面語彙都來自別人的站，
-  // 不是自己想出來的東西，放在作品集裡等於拿別人的點子當自己的招牌。
-  // 素材（public/media/bookshelf.*、record-shelf.*）與錄影腳本都留著，要復原就把資料補回這裡。
+  // 2026-07-29 撤下四件：
+  //   書櫃（bookshelf）、唱片架（record-shelf）—— 版面語彙來自別人的站，
+  //     不是自己想出來的東西，放在作品集裡等於拿別人的點子當自己的招牌。
+  //   五層規劃系統（five-layer-plan）、Video-to-3D 立體快照（video-to-3d）。
+  // 站都還在線上，只是不列為作品。素材（public/media/*）與錄影腳本都留著，
+  // 要復原就把資料補回這裡。收錄的判準：這件裡面有沒有一個自己解掉的問題。
   {
     slug: 'wardrobe',
     name: '我的衣櫃',
@@ -128,10 +130,10 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'oasis',
-    name: '綠洲 Oasis',
+    name: 'OASIS 綠洲 探索空間',
     latin: 'OASIS',
     kind: '拼場共租平台',
-    short: '綠洲',
+    short: 'OASIS 綠洲',
     // 文案取自站主自己寫的 README 第一段：「想用一個空間，但一個人租太貴。」
     desc: '想用練團室但一個人租太貴——發起拼場，揪人、分攤、排程讓平台喬好。大二的期末專題，56 個測試、CI，一路做到上線。',
     status: 'live',
@@ -180,22 +182,6 @@ export const PROJECTS: Project[] = [
     cat: '展示',
   },
   {
-    slug: 'five-layer-plan',
-    name: '五層規劃系統',
-    latin: 'FIVE LAYER PLAN',
-    kind: '計畫工具',
-    short: '五層規劃',
-    desc: '把長期目標拆成五層，一層一層往下對齊。',
-    status: 'live',
-    href: 'https://five-layer-plan.vercel.app',
-    year: 2026,
-    tags: ['工具', '規劃'],
-    cover: null,
-    still: null,
-    video: null,
-    cat: '工具',
-  },
-  {
     slug: 'room',
     name: '房間',
     latin: 'THE ROOM',
@@ -206,22 +192,6 @@ export const PROJECTS: Project[] = [
     href: 'https://room-pitch.vercel.app/index.html',
     year: 2026,
     tags: ['入口', '影像', '滾動敘事'],
-    cover: null,
-    still: null,
-    video: null,
-    cat: '展示',
-  },
-  {
-    slug: 'video-to-3d',
-    name: 'Video-to-3D 立體快照',
-    latin: 'VIDEO TO 3D',
-    kind: '進行中',
-    short: '立體快照',
-    desc: '在瀏覽器裡跑深度模型，把一段影片變成可轉動的立體快照。',
-    status: 'wip',
-    href: null,
-    year: 2026,
-    tags: ['模型', '瀏覽器推論', '3D'],
     cover: null,
     still: null,
     video: null,
