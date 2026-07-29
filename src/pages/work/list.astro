@@ -1,0 +1,303 @@
+---
+/**
+ * 作品 · 列表 —— 舞台的另一種看法。
+ *
+ * 跟 /work 是**同一批 13 件**，不是另一份清單。
+ * 輪播適合一件一件看，列表適合一次看完 —— 兩者由頁首的切換連結互通。
+ */
+import Base from '../../layouts/Base.astro';
+import Placeholder from '../../components/Placeholder.astro';
+import { STATS } from '../../data/projects';
+import { WORKS as PROJECTS } from '../../data/media';
+
+const live = PROJECTS.filter((p) => p.status === 'live');
+const rest = PROJECTS.filter((p) => p.status !== 'live');
+
+const groups = [
+  { key: 'live', label: '上線中', latin: 'LIVE', items: live },
+  { key: 'wip', label: '在路上', latin: 'IN PROGRESS', items: rest },
+];
+
+// 編號跨組連續：01…13
+let n = 0;
+---
+
+<Base title="作品 · 列表" description={`${STATS.total} 件作品，${STATS.live} 件已上線。`}>
+  <header class="wrap head">
+    <div class="head__top">
+      <p class="mono">[ WORK — {String(STATS.total).padStart(2, '0')} ]</p>
+      <p class="mono head__view">
+        <a class="lnk" href="/work">輪播</a>
+        <span aria-hidden="true">/</span>
+        <span class="is-on" aria-current="page">列表</span>
+      </p>
+    </div>
+
+    <h1 class="t-display head__h">全部作品</h1>
+    <p class="t-lede head__lede">
+      題材各異，骨子裡是同一個動作 —— 把生活裡的東西一件一件建檔，再做成一個可以走進去的展場。
+    </p>
+    <div class="head__stats">
+      <p class="mono">
+        <span class="dot dot--live" aria-hidden="true"></span>
+        {String(STATS.live).padStart(2, '0')} 上線
+      </p>
+      <p class="mono">
+        <span class="dot" aria-hidden="true"></span>
+        {String(STATS.wip).padStart(2, '0')} 在路上
+      </p>
+    </div>
+  </header>
+
+  {
+    groups.map((g) => (
+      <section class="wrap grp">
+        <div class="grp__head">
+          <h2 class="mono mono--bright">[ {g.latin} ]</h2>
+          <p class="mono">{String(g.items.length).padStart(2, '0')} 件</p>
+        </div>
+
+        <ol class="rows">
+          {g.items.map((p) => {
+            n += 1;
+            const num = String(n).padStart(2, '0');
+            const Tag = p.href ? 'a' : 'div';
+            return (
+              <li class="row">
+                <Tag
+                  class="row__in"
+                  href={p.href ?? undefined}
+                  target={p.href ? '_blank' : undefined}
+                  rel={p.href ? 'noopener noreferrer' : undefined}
+                >
+                  <span class="mono row__num">{num}</span>
+
+                  <span class="row__body">
+                    <span class="row__title t-title">{p.name}</span>
+                    <span class="mono row__kind">
+                      {p.latin} · {p.kind}
+                    </span>
+                    <span class="row__desc t-body">{p.desc}</span>
+                  </span>
+
+                  <span class="row__thumb" aria-hidden="true">
+                    <Placeholder src={p.cover} ratio="3 / 2" label={p.latin} />
+                  </span>
+
+                  <span class="row__meta">
+                    <span class="mono row__tags">{p.tags.join(' / ')}</span>
+                    <span class="mono row__year">{p.year}</span>
+                    <span class="mono row__go">
+                      {p.href ? '進站 ↗' : p.status === 'private' ? '不公開' : '未上線'}
+                    </span>
+                  </span>
+                </Tag>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    ))
+  }
+</Base>
+
+<style>
+  .head {
+    padding-block: var(--s6) var(--s7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s4);
+  }
+
+  .head__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s4);
+  }
+
+  .head__view {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2);
+  }
+
+  .head__view a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding-inline: 3px;
+  }
+
+  .head__view .is-on {
+    color: var(--paper);
+  }
+
+  .head__h {
+    margin-top: var(--s2);
+  }
+
+  .head__lede {
+    margin-top: var(--s3);
+    color: var(--paper-64);
+  }
+
+  .head__stats {
+    display: flex;
+    gap: var(--s5);
+    margin-top: var(--s3);
+  }
+
+  .head__stats p {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+  }
+
+  .grp {
+    padding-bottom: var(--s6);
+  }
+
+  .grp__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: var(--s3);
+    border-bottom: 1px solid var(--paper-18);
+  }
+
+  /* --- 作品列：編號分節的橫列，不是卡片牆 ------------------------------ */
+
+  .row + .row {
+    border-top: 1px solid var(--paper-08);
+  }
+
+  .row__in {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--s3) var(--s4);
+    align-items: start;
+    padding-block: var(--s4);
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+
+  .row__num {
+    padding-top: 0.7em;
+    color: var(--paper-38);
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .row__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    min-width: 0;
+  }
+
+  .row__title {
+    display: block;
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .row__kind {
+    color: var(--paper-38);
+  }
+
+  .row__desc {
+    color: var(--paper-64);
+    max-width: 54ch;
+  }
+
+  /* 縮圖：桌面 hover 才從右側展開；觸控裝置常駐（沒有 hover 可用） */
+  .row__thumb {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    margin-top: var(--s2);
+  }
+
+  .row__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s3);
+    grid-column: 2;
+  }
+
+  .row__tags,
+  .row__year {
+    color: var(--paper-38);
+  }
+
+  .row__go {
+    color: var(--paper-64);
+  }
+
+  /* --- 桌面：hover 展開縮圖 --------------------------------------------
+     min-width 是必要條件，不只是 hover 能力：把桌面瀏覽器縮到 375px 時
+     (hover:hover) 仍然成立，只靠能力查詢會讓 220px 寬的縮圖擠出畫面。
+     ------------------------------------------------------------------ */
+
+  @media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+    .row__in {
+      grid-template-columns: auto minmax(0, 1fr) 0fr;
+      align-items: center;
+      column-gap: var(--s5);
+    }
+
+    .row__body {
+      grid-row: 1;
+    }
+
+    .row__thumb {
+      grid-row: 1;
+      grid-column: 3;
+      margin: 0;
+      width: 220px;
+      max-width: none;
+      overflow: hidden;
+      clip-path: inset(0 100% 0 0);
+      opacity: 0;
+      transition:
+        clip-path 520ms var(--ease-io),
+        opacity 320ms var(--ease-out);
+    }
+
+    .row__meta {
+      grid-column: 2 / -1;
+      grid-row: 2;
+    }
+
+    .row:hover .row__thumb,
+    .row__in:focus-visible .row__thumb {
+      clip-path: inset(0 0 0 0);
+      opacity: 1;
+    }
+
+    .row:hover .row__num,
+    .row__in:focus-visible .row__num {
+      color: var(--red);
+    }
+
+    /* 游標在某一列上時，其餘各列退到背景 —— 注意力只有一個焦點 */
+    .rows:hover .row:not(:hover) .row__in {
+      opacity: 0.42;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .row__in {
+      grid-template-columns: 1fr;
+    }
+    .row__num {
+      padding-top: 0;
+    }
+    .row__meta {
+      grid-column: 1;
+    }
+    .row__thumb {
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+</style>

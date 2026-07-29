@@ -1,0 +1,57 @@
+---
+/**
+ * 底片顆粒。
+ *
+ * 每個決定都有量測依據，不是憑感覺調的：
+ *
+ * · **不用 mix-blend-mode。** 在近黑底上 overlay 只造成 1 階的亮度差、soft-light 是 0 階
+ *   （multiply／darken／color-burn 同樣是死的）。要靠混合模式做暗底顆粒，最後只會為了
+ *   看得見而把 opacity 拉高，變成一層灰霧。改用 alpha 載明度的 tile ＋ 純 opacity。
+ * · **opacity .055**：在 #0c0c0b 上給出約 5 階的陰影振幅，同時把 paper 色文字留在原地。
+ * · **numOctaves = 2**：octaves 才是 feTurbulence 的成本大頭（同尺寸 tile，3 octaves 19ms、
+ *   4 octaves 47ms）。中階手機乘上幾層就是首次繪製卡 100–200ms。
+ * · **color-interpolation-filters='sRGB'**：不寫的話規格預設 linearRGB，中位亮度會從 128 飄到 188。
+ * · **inset:-12px ＋ px 位移**：只需要蓋住抖動距離。用 -100%/300% 會配置 9 倍視窗大小的
+ *   合成層（1080×2400 手機上是 89MB GPU 材質，而不是 10MB）。
+ * · **animate transform，不是 background-position**：後者每格觸發整頁重繪。
+ * · **steps(1,end) ≈ 11Hz**：linear 會讀成「顆粒在飄」，像鏡頭髒了；跳格才是底片。
+ */
+---
+
+<div class="grain" aria-hidden="true" transition:persist></div>
+
+<style>
+  .grain {
+    position: fixed;
+    inset: -12px;
+    z-index: 10020;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    opacity: 0.055;
+    will-change: transform;
+    contain: strict;
+    animation: grain-jitter 0.9s steps(1, end) infinite;
+  }
+
+  /* 位移一律 ≤ 8px，才不會露出 -12px 的出血邊 */
+  @keyframes grain-jitter {
+    0% { transform: translate3d(0, 0, 0); }
+    10% { transform: translate3d(-4px, -6px, 0); }
+    20% { transform: translate3d(-8px, 3px, 0); }
+    30% { transform: translate3d(5px, -8px, 0); }
+    40% { transform: translate3d(-5px, 7px, 0); }
+    50% { transform: translate3d(-8px, 4px, 0); }
+    60% { transform: translate3d(7px, -2px, 0); }
+    70% { transform: translate3d(-1px, 8px, 0); }
+    80% { transform: translate3d(3px, -5px, 0); }
+    90% { transform: translate3d(-7px, 5px, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grain {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,10 @@
+﻿import { chromium } from 'playwright-core';
+const b = await chromium.launch({ executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless:true });
+const p = await (await b.newContext({viewport:{width:1440,height:900}})).newPage();
+const bad=[];
+p.on('response', r=>{ if(r.status()>=400) bad.push(`${r.status()}  ${r.url()}`); });
+p.on('requestfailed', r=>bad.push(`FAIL ${r.url()} ${r.failure()?.errorText||''}`));
+await p.goto('https://personal-site-tan-alpha.vercel.app/',{waitUntil:'load'});
+await new Promise(x=>setTimeout(x,5000));
+console.log(bad.length? bad.join('\n') : '沒有失敗的請求');
+await b.close();

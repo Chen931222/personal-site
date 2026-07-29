@@ -1,0 +1,234 @@
+---
+/**
+ * 全螢幕選單。
+ *
+ * 巨型義大利體襯線的編號清單 —— 跟開場的片名卡同一個聲音，
+ * 只是換成可以點的。這是全站唯一用到 Sentient Italic 大字級的地方，
+ * 所以它必須看起來像一件事，不是一個抽屜。
+ *
+ * 也是「聯絡」與「重播開場」的家：這兩項擠不進頁首那一列，
+ * 但都是訪客真的會想要的動作。
+ *
+ * 無障礙：role="dialog" + aria-modal，開啟時把 main/footer 設為 inert
+ * （瀏覽器原生的焦點與輔助技術阻隔，不用手寫焦點陷阱），
+ * Esc 關閉，關閉後焦點回到觸發按鈕。
+ */
+import { SITE } from '../data/site';
+import Social from './Social.astro';
+
+const items = [
+  { latin: 'INDEX', zh: '首頁', href: '/' },
+  { latin: 'WORK', zh: '作品', href: '/work' },
+  { latin: 'JOURNAL', zh: '遊記', href: '/journal' },
+  { latin: 'ABOUT', zh: '關於', href: '/#about' },
+  { latin: 'CONTACT', zh: '聯絡', href: `mailto:${SITE.contact.email}` },
+  { latin: 'REPLAY', zh: '重播開場', href: '/', replay: true },
+];
+
+const links = SITE.contact.links.filter((l) => l.href);
+---
+
+<div class="menu" data-menu hidden>
+  <div class="menu__bg" data-menu-bg aria-hidden="true"></div>
+
+  <div
+    class="menu__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-label="主選單"
+    data-menu-panel
+  >
+    <nav class="menu__list">
+      {
+        items.map((it, i) => (
+          <a
+            class="menu__row"
+            href={it.href}
+            data-menu-row
+            data-replay={it.replay ? '' : undefined}
+            data-menu-close={it.replay ? '' : undefined}
+          >
+            <span class="mono menu__no" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}.
+            </span>
+            <span class="menu__word">
+              <span class="mono menu__zh">{it.zh}</span>
+              <span class="ovh menu__mask">
+                <span class="menu__latin" data-menu-line>
+                  {it.latin}
+                </span>
+              </span>
+            </span>
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="menu__foot">
+      <p class="mono menu__credit">
+        <a class="lnk" href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a>
+        {
+          links.map((l) => <Social label={l.label} href={l.href} class="menu__soc" />)
+        }
+      </p>
+      <p class="mono menu__c">© 2026 · 仍在建檔中</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .menu {
+    position: fixed;
+    inset: 0;
+    z-index: 850;
+  }
+
+  .menu[hidden] {
+    display: none;
+  }
+
+  /* 背幕：scaleY 從上緣拉下來。用 transform 不用 clip-path ——
+     全螢幕的 clip-path 每格重繪整個子樹，scaleY 走合成器。 */
+  .menu__bg {
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    transform: scaleY(0);
+    transform-origin: top center;
+    will-change: transform;
+  }
+
+  .menu__panel {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s6);
+    padding: 104px calc(var(--gutter) + var(--rail)) var(--s5);
+  }
+
+  /* --- 清單 -------------------------------------------------------------- */
+
+  .menu__list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2px, 0.6vh, 10px);
+  }
+
+  .menu__row {
+    display: flex;
+    align-items: baseline;
+    gap: clamp(10px, 1.4vw, 22px);
+    padding-block: 2px;
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+
+  .menu__no {
+    color: var(--paper-38);
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  /* 中文標籤提到大寫字高的位置，佔參考站那個上標小字的位子 ——
+     但帶著真的資訊，不是一個重複的首字母。 */
+  .menu__word {
+    position: relative;
+    display: block;
+  }
+
+  .menu__zh {
+    position: absolute;
+    left: 0.06em;
+    bottom: 100%;
+    margin-bottom: -0.5em;
+    color: var(--paper-38);
+    white-space: nowrap;
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .menu__mask {
+    display: block;
+  }
+
+  .menu__latin {
+    display: block;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 200;
+    font-size: clamp(2.6rem, 7vw, 6.4rem);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    transform: translateY(112%);
+    will-change: transform;
+  }
+
+  /* 游標在某一列上時，其餘各列退到背景 —— 注意力只有一個焦點 */
+  @media (hover: hover) and (pointer: fine) {
+    .menu__list:hover .menu__row:not(:hover) {
+      opacity: 0.32;
+    }
+  }
+
+  .menu__row:hover .menu__no,
+  .menu__row:focus-visible .menu__no {
+    color: var(--red);
+  }
+
+  .menu__row:hover .menu__zh,
+  .menu__row:focus-visible .menu__zh {
+    color: var(--paper);
+  }
+
+  /* --- 頁腳 -------------------------------------------------------------- */
+
+  .menu__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s3) var(--s5);
+    padding-top: var(--s4);
+    border-top: 1px solid var(--paper-18);
+    opacity: 0;
+  }
+
+  .menu__credit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s4);
+  }
+
+  .menu__credit a,
+  .menu__c {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+  }
+
+  @media (max-width: 767px) {
+    .menu__panel {
+      padding-top: 92px;
+      gap: var(--s5);
+    }
+    .menu__list {
+      align-items: flex-start;
+    }
+    .menu__zh {
+      margin-bottom: -0.35em;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu__bg {
+      transform: none;
+    }
+    .menu__latin {
+      transform: none;
+    }
+    .menu__foot {
+      opacity: 1;
+    }
+  }
+</style>

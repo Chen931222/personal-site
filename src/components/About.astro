@@ -1,0 +1,719 @@
+---
+/**
+ * 首頁：開場結束之後往下捲的那一段 —— 關於我。
+ *
+ * 五幕，順序是刻意的：
+ *   ① 承接開場留下的口 —— 銀幕拉開，裡面是一張臉（不是作品）
+ *   ② 幾張生活照
+ *   ③ 自我介紹（含名字）
+ *   ④ 學經歷與現在正在做什麼
+ *   ⑤ 信箱
+ *
+ * **巨型名字只在幕 ③ 出現一次。** 開場剛剛才把名字拆成兩半展開過，
+ * 幕 ① 再放一次巨型名字等於把高潮花掉兩次；那裡的名字降級成
+ * 影格底下的一行 mono 演職員字幕，讓臉自己說話。這是一個漸強，不是重複。
+ *
+ * 動態：只有兩種 —— 幕 ① 的銀幕拉開（承接開場），以及各幕進場的
+ * 小位移淡入。不在每個元素上撒 hover 動效（見 DESIGN.md）。
+ */
+import Placeholder from './Placeholder.astro';
+import { SITE } from '../data/site';
+import { CREED, STACK, STATS } from '../data/projects';
+// 大頭照與生活照都是 build 時掃 public/media/ 掃出來的 ——
+// 檔案丟進去就會出現，不用改資料檔（見 src/data/media.ts）。
+import { PORTRAIT, PHOTOS } from '../data/media';
+import Social from './Social.astro';
+
+const A = SITE.about;
+const NAME = `${SITE.name.zh.a}${SITE.name.zh.b}`;
+const LATIN = `${SITE.name.latin.a} ${SITE.name.latin.b}`;
+
+const shots = PHOTOS;
+const total = String(shots.length + 1).padStart(2, '0');
+const pad = (i: number) => String(i + 1).padStart(2, '0');
+---
+
+<!-- 首頁的可見文字大多是圖說與 metadata；給螢幕閱讀器與搜尋引擎一個真正的 h1。 -->
+<h1 class="sr-only">{NAME} — {SITE.tagline}</h1>
+
+<!-- ── 幕 ① 承接開場的口 ──────────────────────────────────────────── -->
+<section class="hero" data-hero aria-label="開場">
+  <p class="mono hero__label">[ {A.label} ]</p>
+
+  <div class="hero__gate">
+    <p class="mono hero__rail" aria-hidden="true">
+      <span class="hero__rail-l">PORTRAIT</span>
+      <span class="hero__marks">
+        <span class="hero__mark">v</span>
+        <span class="hero__mark">01</span>
+        <span class="hero__mark">v</span>
+      </span>
+      <span class="hero__rail-r">4:5</span>
+    </p>
+
+    <!-- 這一格就是開場最後兩半名字之間留下的那個口。
+         clip-path 從同一條中線往兩側拉開 —— 兩拍是同一個動作的前後半。 -->
+    <div class="hero__frame" data-hero-frame>
+      <span class="br br--tl" aria-hidden="true"></span>
+      <span class="br br--tr" aria-hidden="true"></span>
+      <span class="br br--bl" aria-hidden="true"></span>
+      <span class="br br--br" aria-hidden="true"></span>
+      <Placeholder
+        src={PORTRAIT}
+        alt={NAME}
+        ratio="4 / 5"
+        label="大頭照"
+        loading="eager"
+        class="hero__img"
+      />
+    </div>
+
+    <!-- 名字在這裡是演職員字幕，不是標題。巨型的那次留給幕 ③。 -->
+    <p class="mono hero__foot">
+      <span class="hero__foot-l">01.</span>
+      <span class="hero__foot-c">{LATIN}</span>
+      <span class="hero__foot-r">.{total}</span>
+    </p>
+  </div>
+
+  <a class="mono hero__cue" href="#about" data-hero-cue>
+    往下 <span class="hero__cue-i" aria-hidden="true">↓</span>
+  </a>
+</section>
+
+<!-- ── 幕 ② 幾張生活照 ────────────────────────────────────────────── -->
+<section class="wrap sec wall-sec" id="about" aria-labelledby="ph-h" data-rise>
+  <div class="sec__head">
+    <h2 class="mono mono--bright" id="ph-h">[ 照片 ]</h2>
+    <p class="mono">01 — {String(shots.length).padStart(2, '0')}</p>
+  </div>
+
+  <div class="wall">
+    {
+      shots.map((s, i) => (
+        <figure class="wall__i" data-rise style={`--d:${i * 60}ms`}>
+          <Placeholder src={s.src} alt={s.caption || s.label} ratio={s.ratio} label={s.label} />
+          <figcaption class="mono wall__cap">
+            [ {pad(i)} ] {s.caption || s.label}
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</section>
+
+<!-- ── 幕 ③ 自我介紹 ──────────────────────────────────────────────── -->
+<section class="wrap sec who" aria-labelledby="who-h" data-rise>
+  <div class="sec__head">
+    <h2 class="mono mono--bright" id="who-h">[ 自我介紹 ]</h2>
+    <p class="mono">{LATIN}</p>
+  </div>
+
+  <!-- 全站唯一一次把名字放大。中文沒有義大利體，重音改用字級對比達成
+       （「我是」壓到 mono 級，名字放到 display 級）—— 見 DESIGN.md。 -->
+  <p class="who__intro">
+    <span class="mono who__am">我是</span>
+    <span class="t-display who__name">{NAME}</span>
+  </p>
+
+  <div class="who__cols">
+    <p class="t-lede who__lede">{A.lede}</p>
+    <div class="who__body">
+      {A.body.map((p) => <p class="t-body">{p}</p>)}
+    </div>
+  </div>
+
+  <!-- 原則：從「我是誰」通往「我做過什麼」的橋。刻意壓小，它是註腳不是宣言。 -->
+  <ol class="creed">
+    {
+      CREED.map((c, i) => (
+        <li class="creed__i">
+          <span class="mono creed__n">{pad(i)}</span>
+          <blockquote class="creed__q">{c.q}</blockquote>
+          <cite class="mono creed__s">{c.src}</cite>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<!-- ── 幕 ④ 學經歷與現在 ──────────────────────────────────────────── -->
+<section class="wrap sec path-sec" aria-labelledby="path-h" data-rise>
+  <div class="sec__head">
+    <h2 class="mono mono--bright" id="path-h">[ 學經歷 · 現在 ]</h2>
+    <p class="mono">{String(A.path.length).padStart(2, '0')} 列</p>
+  </div>
+
+  <ol class="path">
+    {
+      A.path.map((e) => (
+        <li class:list={['path__i', { 'is-todo': e.todo }]}>
+          <p class="mono path__t">{e.period}</p>
+
+          <div class="path__body">
+            <h3 class="path__title">{e.title}</h3>
+            <p class="mono path__org">
+              {e.now && <span class="dot dot--live" aria-hidden="true" />}
+              {e.org}
+            </p>
+            {e.note && <p class="t-body path__note">{e.note}</p>}
+          </div>
+
+          <p class="mono path__flag">
+            {e.now ? '進行中' : e.todo ? '[ 待補 ]' : ''}
+          </p>
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="tools">
+    <p class="mono mono--bright tools__h">[ 工具 ]</p>
+    <ul class="tools__list">
+      {STACK.map((s) => <li class="mono tools__i">{s}</li>)}
+    </ul>
+  </div>
+</section>
+
+<!-- ── 幕 ⑤ 信箱 ──────────────────────────────────────────────────── -->
+<section class="wrap sec end" aria-labelledby="end-h" data-rise>
+  <div class="sec__head">
+    <h2 class="mono mono--bright" id="end-h">[ 聯絡 ]</h2>
+    <p class="mono">GMAIL</p>
+  </div>
+
+  <p class="t-lede end__outro">{A.outro}</p>
+
+  <a class="end__mail" href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a>
+
+  {
+    SITE.contact.links.filter((l) => l.href).length > 0 && (
+      <ul class="end__soc">
+        {SITE.contact.links
+          .filter((l) => l.href)
+          .map((l) => (
+            <li>
+              <Social label={l.label} href={l.href} />
+            </li>
+          ))}
+      </ul>
+    )
+  }
+
+  <!-- 首頁不掛全站頁尾（那會在信箱底下再出現一次同一個信箱）。
+       這一列是版權說明，不是第二個頁尾。 -->
+  <div class="end__colophon">
+    <p class="mono">© 2026 · 仍在建檔中</p>
+    <p class="mono">
+      <a class="lnk" href="/work">
+        {STATS.total} 件作品 · {STATS.live} 件上線 →
+      </a>
+    </p>
+  </div>
+</section>
+
+<style>
+  /* ==== 共用：幕與標頭 =================================================== */
+
+  .sec {
+    padding-block: clamp(64px, 12vh, 136px);
+  }
+
+  .sec__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s4);
+    padding-bottom: var(--s4);
+    border-bottom: 1px solid var(--paper-18);
+  }
+
+  /* ==== 幕 ① 承接開場的口 ================================================ */
+
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    align-items: center;
+    gap: var(--s4);
+    padding: 104px calc(var(--gutter) + var(--rail)) var(--s5);
+    /* 影格以外的東西吃掉的高度：上下留白、標籤、片門讀數、捲動提示與各段間距。
+       量出來約 267px，取 280 留餘裕。 */
+    --chrome: 280px;
+  }
+
+  .hero__label {
+    align-self: end;
+    letter-spacing: 0.16em;
+  }
+
+  .hero__gate {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* 寬度由**剩下的高度**反推，不是憑感覺挑的：
+       4:5 的直式框長得比寬快，用 vw 訂尺寸的話，13 吋筆電（1440×720）
+       會把「往下」的提示整個推到摺線以下 —— 一個沒人看得到的捲動提示
+       等於沒有做。0.8 = 4/5，把高度預算換成寬度。 */
+    width: min(calc((100svh - var(--chrome)) * 0.8), 46vw, 420px);
+    min-width: 208px;
+  }
+
+  .hero__rail,
+  .hero__foot {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--s3);
+  }
+
+  .hero__rail-r,
+  .hero__foot-r {
+    text-align: right;
+  }
+
+  .hero__foot-c {
+    color: var(--paper-64);
+    letter-spacing: 0.14em;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hero__marks {
+    display: flex;
+    gap: 6px;
+  }
+
+  .hero__mark {
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--paper-18);
+    border-radius: 50%;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--paper-38);
+  }
+
+  .hero__frame {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    background: var(--ink-lift);
+    will-change: clip-path;
+  }
+
+  .hero__frame :global(.ph),
+  .hero__frame :global(.ph-img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: auto !important;
+    border: 0;
+  }
+
+  /* 片門角標 —— 與舞台影格同一套語彙 */
+  .br {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    z-index: 3;
+    pointer-events: none;
+    border: 0 solid var(--paper-64);
+  }
+  .br--tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
+  .br--tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
+  .br--bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
+  .br--br { bottom: -1px; right: -1px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  /* 銀幕從中線拉開。起始的閉合狀態只在「開場真的會播」時才下 ——
+     沒有 JS（html 沒有 data-js）就直接看得到照片，不會是一片空白。 */
+  :global(html[data-js]:not([data-no-intro])) .hero__frame {
+    clip-path: polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%);
+  }
+
+  .hero__cue {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2);
+    align-self: start;
+    min-height: 26px;
+    padding-inline: 3px;
+    color: var(--paper-38);
+    transition:
+      color var(--t-base) var(--ease-out),
+      opacity var(--t-base) var(--ease-out);
+  }
+
+  .hero__cue:hover,
+  .hero__cue:focus-visible {
+    color: var(--paper);
+  }
+
+  /* 捲下去之後提示就沒有意義了 */
+  .hero__cue[data-gone] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hero__cue-i {
+    animation: cue 2.4s var(--ease-io) infinite;
+  }
+
+  /* 平板：高度多得是，46vw 卻只給 353px —— 版面看起來不是克制，是沒填滿。
+     放寬 vw 的限制，讓 420px 的上限真的生效。 */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .hero__gate {
+      width: min(calc((100svh - var(--chrome)) * 0.8), 58vw, 420px);
+    }
+  }
+
+  /* 手機：46vw 會讓臉縮成一張郵票（375px 螢幕上只有 172px 寬）。
+     直式螢幕的高度預算反而寬裕，改讓寬度說了算。 */
+  @media (max-width: 767px) {
+    .hero {
+      padding-top: 88px;
+      --chrome: 250px;
+    }
+    .hero__gate {
+      width: min(calc((100svh - var(--chrome)) * 0.8), 82vw);
+    }
+  }
+
+  @keyframes cue {
+    0%, 62%, 100% { transform: translateY(0); }
+    78% { transform: translateY(4px); }
+  }
+
+  /* ==== 幕 ② 照片牆 ====================================================== */
+
+  /* 兩軌交錯的階梯，不是等寬卡片牆 —— 一整排同尺寸的圓角方塊是
+     生成式預設美學的樣子，不是相簿的樣子。右軌整體下沉，
+     再用 padding 讓相鄰兩張不同寬，四張照片就沒有兩張一樣大。 */
+  .wall {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(40px, 8vh, 96px) var(--s6);
+    align-items: start;
+    margin-top: var(--s6);
+  }
+
+  .wall__i:nth-child(2n) {
+    margin-top: clamp(36px, 13vh, 150px);
+  }
+
+  .wall__i:nth-child(4n + 1) {
+    padding-right: clamp(0px, 5vw, 84px);
+  }
+
+  .wall__i:nth-child(4n) {
+    padding-left: clamp(0px, 7vw, 112px);
+  }
+
+  .wall__cap {
+    margin-top: var(--s2);
+    color: var(--paper-38);
+  }
+
+  @media (max-width: 767px) {
+    .wall {
+      grid-template-columns: 1fr;
+      gap: var(--s6);
+    }
+    .wall__i {
+      margin-top: 0 !important;
+      padding: 0 !important;
+    }
+    /* 手機沒有兩軌可以交錯，改用寬度與對齊交替 */
+    .wall__i:nth-child(2n) {
+      width: 72%;
+      margin-left: auto !important;
+    }
+    .wall__i:nth-child(2n + 1) {
+      width: 88%;
+    }
+  }
+
+  /* ==== 幕 ③ 自我介紹 ==================================================== */
+
+  .who__intro {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--s3) var(--s4);
+    margin-top: var(--s6);
+  }
+
+  .who__am {
+    color: var(--paper-38);
+  }
+
+  .who__name {
+    display: block;
+  }
+
+  .who__cols {
+    display: grid;
+    gap: var(--s5);
+    margin-top: var(--s6);
+  }
+
+  @media (min-width: 900px) {
+    .who__cols {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+      gap: var(--s7);
+    }
+  }
+
+  .who__lede {
+    max-width: 22ch;
+  }
+
+  .who__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s4);
+  }
+
+  /* --- 原則：註腳，不是宣言 --------------------------------------------- */
+
+  .creed {
+    display: grid;
+    gap: var(--s5) var(--s6);
+    margin-top: clamp(48px, 9vh, 96px);
+    padding-top: var(--s5);
+    border-top: 1px solid var(--paper-08);
+  }
+
+  @media (min-width: 768px) {
+    .creed {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1180px) {
+    .creed {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .creed__i {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+  }
+
+  .creed__n {
+    color: var(--red);
+  }
+
+  .creed__q {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+
+  .creed__s {
+    color: var(--paper-38);
+    font-style: normal;
+  }
+
+  /* ==== 幕 ④ 學經歷 ====================================================== */
+
+  .path {
+    margin-top: var(--s5);
+  }
+
+  .path__i {
+    display: grid;
+    grid-template-columns: minmax(88px, auto) minmax(0, 1fr) auto;
+    gap: var(--s3) var(--s5);
+    align-items: start;
+    padding-block: var(--s5);
+    border-bottom: 1px solid var(--paper-08);
+  }
+
+  .path__t {
+    padding-top: 0.5em;
+    color: var(--paper-64);
+  }
+
+  .path__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+  }
+
+  .path__title {
+    font-family: var(--font-display);
+    font-weight: 200;
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+  }
+
+  .path__org {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+  }
+
+  .path__note {
+    margin-top: var(--s1);
+    max-width: 56ch;
+  }
+
+  .path__flag {
+    padding-top: 0.5em;
+    color: var(--paper-38);
+    white-space: nowrap;
+  }
+
+  /* 還沒填的列：跟圖片一樣走「打樣」語彙 —— 看起來像等著填的欄位，
+     不像壞掉，更不假裝成真的資歷。 */
+  .path__i.is-todo {
+    border-left: 1px dashed var(--paper-18);
+    padding-left: var(--s4);
+  }
+
+  .path__i.is-todo .path__title,
+  .path__i.is-todo .path__t {
+    color: var(--paper-38);
+  }
+
+  @media (max-width: 767px) {
+    .path__i {
+      grid-template-columns: 1fr auto;
+      gap: var(--s2) var(--s3);
+    }
+    .path__body {
+      grid-column: 1 / -1;
+    }
+    .path__t,
+    .path__flag {
+      padding-top: 0;
+    }
+  }
+
+  /* --- 工具 -------------------------------------------------------------- */
+
+  .tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s3) var(--s5);
+    margin-top: var(--s5);
+  }
+
+  .tools__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s2) var(--s3);
+  }
+
+  .tools__i {
+    padding: 7px 11px;
+    border: 1px solid var(--paper-08);
+    color: var(--paper-64);
+  }
+
+  /* ==== 幕 ⑤ 信箱 ======================================================== */
+
+  .end__outro {
+    margin-top: var(--s6);
+    color: var(--paper-64);
+  }
+
+  .end__mail {
+    display: inline-block;
+    margin-top: var(--s4);
+    font-family: var(--font-display);
+    font-weight: 200;
+    /* 上限由「25 個字元要放得進版心」反推。信箱換行很難看，
+       但溢出更難看 —— anywhere 是最後一道保險，正常尺寸下不會觸發。 */
+    font-size: clamp(1.5rem, 5.2vw, 4.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .end__mail:hover,
+  .end__mail:focus-visible {
+    color: var(--red);
+  }
+
+  .end__soc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s4);
+    margin-top: var(--s5);
+  }
+
+  .end__soc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+  }
+
+  .end__colophon {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s3) var(--s5);
+    margin-top: clamp(56px, 10vh, 112px);
+    padding-top: var(--s4);
+    border-top: 1px solid var(--paper-18);
+  }
+
+  .end__colophon a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+  }
+
+  /* ==== 進場 =============================================================
+     只有一種：小位移淡入。沒有 JS 或減少動態時直接呈現最終狀態。
+     ====================================================================== */
+
+  :global(html[data-js]) [data-rise] {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  :global(html[data-js]) [data-rise].is-in {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 720ms var(--ease-out) var(--d, 0ms),
+      transform 720ms var(--ease-out) var(--d, 0ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html[data-js]) [data-rise] {
+      opacity: 1;
+      transform: none;
+    }
+    .hero__cue-i {
+      animation: none;
+    }
+  }
+
+  /* 列印沒有捲動，IntersectionObserver 永遠不會替下半頁解鎖 ——
+     不解掉這一條，印出來的會是一張只有臉的紙。 */
+  @media print {
+    :global(html[data-js]) [data-rise] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,379 @@
+---
+/**
+ * 開場：放映機上片。
+ *
+ * 四拍，總長 ≈ 4.2s：
+ *   ① 兩列膠捲反向轉起來，中央出現片頭字卡
+ *   ② 字卡上移出鏡，里程表接位，00 → 100（academy leader 倒數）
+ *   ③ 里程表出鏡，名字從中央往兩側展開，把膠捲推出畫面
+ *   ④ 布幕從中央拉開，露出舞台
+ *
+ * 隨時可跳過（點擊／任意鍵／捲動／跳過鍵），同一 session 只播一次。
+ * prefers-reduced-motion 直接不播。
+ */
+import { SITE } from '../data/site';
+// ⚠️ 要 WORKS（media.ts）不是 PROJECTS（projects.ts）。
+//    projects.ts 是純資料，`cover` 永遠是 null；掃 public/media/ 把縮圖接上去的是 media.ts。
+//    匯錯的話膠捲會整排顯示打樣框，而且完全不報錯 —— 它只是「還沒補素材」的樣子。
+import { WORKS as PROJECTS } from '../data/media';
+import Placeholder from './Placeholder.astro';
+
+// 13 個作品交錯分成兩列，左右看起來才不一樣
+const left = PROJECTS.filter((_, i) => i % 2 === 0);
+const right = PROJECTS.filter((_, i) => i % 2 === 1);
+// 各複製兩份 → 位移 -50% 剛好無縫接回
+const strip = (list: typeof PROJECTS) => [...list, ...list];
+
+// 0…9 再接一個 0（共 11 格）。最後一格與第一格是同一個字形，
+// 所以位移繞回去的接縫看不出來 —— 9→0 不會有「倒轉」的視覺。
+const digits = [...Array(10).keys(), 0];
+---
+
+<div class="intro" data-intro-root>
+  <!-- ① 兩列膠捲 -->
+  <div class="intro__band" data-band aria-hidden="true">
+    <div class="reel reel--l">
+      <div class="reel__strip" data-strip="l">
+        {
+          strip(left).map((p, i) => (
+            <div class="reel__frame">
+              <Placeholder
+                src={p.cover}
+                ratio="3 / 2"
+                label={p.latin}
+                loading={i < 4 ? 'eager' : 'lazy'}
+              />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- 名字的兩半：width 從 0 長出來，實體把膠捲推開 -->
+    <div class="intro__half intro__half--a" data-half="a">
+      <span class="ovh"><span class="intro__name" data-name>{SITE.name.zh.a}</span></span>
+    </div>
+    <div class="intro__half intro__half--b" data-half="b">
+      <span class="ovh"><span class="intro__name" data-name>{SITE.name.zh.b}</span></span>
+    </div>
+
+    <div class="reel reel--r">
+      <div class="reel__strip" data-strip="r">
+        {
+          strip(right).map((p, i) => (
+            <div class="reel__frame">
+              <Placeholder
+                src={p.cover}
+                ratio="3 / 2"
+                label={p.latin}
+                loading={i < 4 ? 'eager' : 'lazy'}
+              />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!--
+    字與膠捲之間的暗場。
+
+    兩排膠捲是置中的，字卡、里程表與名字全部疊在它們上面。原本的解法是把整條膠捲
+    壓到 brightness(.62) —— 那是為線框佔位符調的，換成真截圖之後只剩一團泥，
+    訪客看不出那是九個網站，而那正是這一段的全部意義。
+
+    所以改成把暗留在**字的後面**，膠捲亮回來。這是 DESIGN.md 唯一允許的漸層：
+    功能性暗場，為了讓字讀得出來，不是為了好看。
+  -->
+  <div class="intro__scrim" aria-hidden="true"></div>
+
+  <!-- ② 中央字卡與里程表 -->
+  <div class="intro__center" aria-hidden="true">
+    <div class="intro__card" data-card>
+      <p class="mono mono-sm intro__card-mono" data-card-mono>{SITE.intro.mono}</p>
+      <div class="intro__rows">
+        <span class="ovh"><span class="intro__row" data-card-row>{SITE.intro.line1}</span></span>
+        <span class="ovh"><span class="intro__row" data-card-row>{SITE.intro.line2}</span></span>
+      </div>
+    </div>
+
+    <!-- 00 → 99。呎數表數到底就切片名，不需要「100」那一格 —— 參考站也是停在 99。 -->
+    <div class="odo" data-odo>
+      <div class="odo__col">
+        <div class="odo__strip" data-odo-strip="t">
+          {digits.map((d) => <span class="odo__d">{d}</span>)}
+        </div>
+      </div>
+      <div class="odo__col">
+        <div class="odo__strip" data-odo-strip="o">
+          {digits.map((d) => <span class="odo__d">{d}</span>)}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 跳過 -->
+  <button class="intro__skip mono" data-skip type="button">
+    跳過 <span aria-hidden="true">/ SKIP</span>
+  </button>
+
+  <p class="sr-only">開場動畫播放中。按 Esc 或「跳過」可直接進入內容。</p>
+</div>
+
+<noscript>
+  <style>
+    .intro { display: none !important; }
+  </style>
+</noscript>
+
+<style>
+  .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    background: var(--ink);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+
+  /* 沒播（回訪或減少動態）時整塊拿掉，不留 DOM 佔位 */
+  .intro[hidden] {
+    display: none !important;
+  }
+
+  /* --- 膠捲帶 ------------------------------------------------------- */
+
+  .intro__band {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .reel {
+    flex: none;
+    width: clamp(112px, 15vw, 206px);
+    height: 100%;
+    overflow: hidden;
+    /* 上下淡出，像片門的遮罩 */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 18%,
+      #000 82%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 18%,
+      #000 82%,
+      transparent 100%
+    );
+  }
+
+  .reel__strip {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(28px, 6vh, 74px);
+    padding-block: 12vh;
+    will-change: transform;
+  }
+
+  /* 略降飽和讓它讀起來像片庫存底片，但**不壓亮度** ——
+     壓亮度就看不出那是九個真的網站了。可讀性交給下面的 .intro__scrim。 */
+  .reel__frame {
+    width: 100%;
+    filter: saturate(0.86);
+  }
+
+  .intro__scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* 疊序：膠捲(auto) → 暗場(1) → 字卡與里程表(2) → 名字(3)。
+       .intro__band 沒有 z-index，不成立堆疊脈絡，所以它的子元素
+       （名字的兩半）跟這一層是同一個座標系，可以直接比。 */
+    z-index: 1;
+    /* 橢圓形的一池暗，剛好蓋住字卡／里程表／名字所在的中央帶。
+       邊緣要夠鬆（到 72% 才收乾淨），否則會看得出一圈暈輪。 */
+    background: radial-gradient(
+      ellipse 62% 46% at 50% 50%,
+      rgba(12, 12, 11, 0.9) 0%,
+      rgba(12, 12, 11, 0.78) 34%,
+      rgba(12, 12, 11, 0) 72%
+    );
+  }
+
+  /* --- 名字的兩半 ---------------------------------------------------- */
+
+  .intro__half {
+    flex: none;
+    width: 0;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    /* 名字要在暗場之上 —— 它是這一段的高潮，不能被自己的可讀性補丁壓住 */
+    position: relative;
+    z-index: 3;
+  }
+
+  .intro__half--a {
+    justify-content: flex-end;
+  }
+
+  .intro__half--b {
+    justify-content: flex-start;
+  }
+
+  .intro__name {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 200;
+    font-size: clamp(3rem, 11vw, 10rem);
+    line-height: 1.06;
+    letter-spacing: -0.04em;
+    transform: translateY(110%);
+    will-change: transform;
+  }
+
+  /* --- 中央字卡 / 里程表 --------------------------------------------- */
+
+  .intro__center {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    grid-template-areas: 'stack';
+    pointer-events: none;
+  }
+
+  .intro__card,
+  .odo {
+    grid-area: stack;
+  }
+
+  .intro__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s4);
+    text-align: center;
+  }
+
+  .intro__card-mono {
+    opacity: 0;
+    letter-spacing: 0.28em;
+  }
+
+  .intro__rows {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.04em;
+  }
+
+  /* .ovh（行遮罩＋下伸部補償）定義在 global.css，這裡不重複 */
+
+  .intro__row {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 200;
+    font-size: clamp(2.4rem, 7.4vw, 5.4rem);
+    line-height: 1.08;
+    letter-spacing: 0.02em;
+    transform: translateY(110%);
+    will-change: transform;
+  }
+
+  /* --- 里程表 --------------------------------------------------------- */
+
+  .odo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: clamp(3.4rem, 10vw, 7.6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+  }
+
+  .odo__col {
+    height: 1em;
+    overflow: hidden;
+  }
+
+  .odo__strip {
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+  }
+
+  .odo__d {
+    display: block;
+    height: 1em;
+    line-height: 1;
+    text-align: center;
+  }
+
+  /* --- 跳過 ----------------------------------------------------------- */
+
+  .intro__skip {
+    position: absolute;
+    right: calc(var(--gutter) + var(--rail));
+    bottom: var(--s5);
+    z-index: 3;
+    padding: 10px 14px;
+    border: 1px solid var(--paper-18);
+    color: var(--paper-38);
+    opacity: 0;
+    transition:
+      color var(--t-base) var(--ease-out),
+      border-color var(--t-base) var(--ease-out);
+  }
+
+  .intro__skip:hover,
+  .intro__skip:focus-visible {
+    color: var(--paper);
+    border-color: var(--paper-38);
+  }
+
+  @media (max-width: 767px) {
+    /* 手機只留一列膠捲，另一列會被名字擠爆 */
+    .reel--r {
+      display: none;
+    }
+
+    /**
+     * 剩下那列必須**抽出 flex 流**。
+     *
+     * 膠捲帶是 `justify-content: center` 的 flex：[膠捲][名字左半][名字右半][膠捲]。
+     * 少掉右邊那列之後，剩下的左列還佔著寬度，整組就被推向右邊 ——
+     * 實測 375px 下名字的兩半在 x=244 相接，而視窗中線是 187.5，偏了 56px。
+     *
+     * 那 56px 不只是「有點歪」：開場的交棒是把名字讓出的那個口交給舞台的影格，
+     * 影格是對著視窗中線開的。中線對不上，兩拍就不再是同一個動作的前後半
+     * （DESIGN.md 的第一條構圖規則）。
+     *
+     * 抽成絕對定位貼左緣之後，兩個 0 寬的半邊自然落在視窗正中，
+     * 膠捲則像底片從畫面左側跑過去 —— 手機上反而更像放映機。
+     */
+    .reel--l {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+    }
+    .intro__skip {
+      right: var(--gutter);
+      bottom: var(--s4);
+    }
+  }
+</style>

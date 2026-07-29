@@ -1,0 +1,251 @@
+---
+import { SITE } from '../data/site';
+
+interface Props {
+  /** 目前頁面路徑，用來標示 active */
+  path: string;
+}
+const { path } = Astro.props;
+
+/**
+ * 「關於」是首頁的錨點（/#about），不是另一頁。
+ * 站在首頁最上面（還沒捲到關於）就把它標成 current，讀起來是錯的 ——
+ * 錨點一律不標作用中，左上角的名字本來就說明了你在首頁。
+ */
+const isActive = (href: string) =>
+  href.includes('#') ? false : href === '/' ? path === '/' : path.startsWith(href);
+---
+
+<header class="nav" data-nav>
+  <!-- 點名字＝再看一次開場。在首頁就地重播，不在首頁就導回首頁後自然播放。
+       hover 時右邊會浮出「重播開場」，不然沒人猜得到名字可以點。 -->
+  <a href="/" class="nav__mark" data-replay aria-label="回到首頁並重播開場動畫">
+    <span class="nav__wordmark">{SITE.name.zh.a}{SITE.name.zh.b}</span>
+    <span class="nav__replay mono mono-sm" aria-hidden="true">
+      <span class="nav__replay-i">↺</span> 重播開場
+    </span>
+  </a>
+
+  <!-- 做哪一行。兩個詞，跟片頭字卡同一個聲音。 -->
+  <p class="nav__roles mono" aria-hidden="true">
+    {SITE.roles.map((r) => <span>{r}</span>)}
+  </p>
+
+  <div class="nav__right">
+    <nav class="nav__links" data-nav-links aria-label="主要導覽">
+      {
+        SITE.nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={['nav__link', 'mono', { 'is-active': isActive(item.href) }]}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            <span class="nav__link-zh">{item.label}</span>
+            <span class="nav__link-latin" aria-hidden="true">
+              {item.latin}
+            </span>
+          </a>
+        ))
+      }
+    </nav>
+
+    <button class="nav__menu mono" data-menu-open type="button" aria-expanded="false">選單</button>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--s4);
+    padding: var(--s4) calc(var(--gutter) + var(--rail));
+    /* 不用 mix-blend-mode: difference。它在明亮的作品截圖上會把 #FF4433 翻成青色，
+       等於憑空生出第二個強調色。可讀性由舞台上緣本來就有的暗場負責。 */
+  }
+
+  /* 觸控目標最小 24×24（WCAG 2.2 SC 2.5.8）—— 這裡靠垂直 padding 撐起來，
+     視覺高度不變 */
+  .nav__mark {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    padding-block: 4px;
+    min-height: 24px;
+  }
+
+  .nav__wordmark {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .nav__replay {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 10px;
+    color: var(--paper-38);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition:
+      opacity var(--t-base) var(--ease-out),
+      transform var(--t-base) var(--ease-out);
+  }
+
+  .nav__replay-i {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .nav__mark:hover .nav__replay,
+  .nav__mark:focus-visible .nav__replay {
+    opacity: 1;
+    transform: none;
+  }
+
+  .nav__mark:hover .nav__replay-i {
+    color: var(--red);
+  }
+
+  /* 觸控裝置沒有 hover，提示常駐但更淡 */
+  @media (hover: none) {
+    .nav__replay {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .nav__roles {
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: auto;
+    margin-left: var(--s7);
+  }
+
+  @media (min-width: 900px) {
+    .nav__roles {
+      display: flex;
+    }
+  }
+
+  .nav__right {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--s5);
+  }
+
+  .nav__links {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--s5);
+  }
+
+  /* 最窄的螢幕只留「選單」—— 角落塞三個目標，誰都點不準。
+     只剩兩個連結之後，560px 以上就放得下了。 */
+  @media (max-width: 559px) {
+    .nav__links {
+      display: none;
+    }
+  }
+
+  /* 選單打開時，頁首那排連結收起來 —— 同一批目的地不要在畫面上出現兩次。
+     真正的焦點阻隔由 JS 的 inert 負責，這裡只管視覺。 */
+  :global(html[data-menu-on]) .nav__links {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t-fast) var(--ease-out);
+  }
+
+  .nav__menu {
+    display: inline-flex;
+    align-items: center;
+    min-width: 24px;
+    min-height: 26px;
+    padding: 0;
+    color: var(--paper);
+    position: relative;
+  }
+
+  .nav__menu::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2px;
+    height: 1px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--t-base) var(--ease-out);
+  }
+
+  .nav__menu:hover::after,
+  .nav__menu:focus-visible::after,
+  .nav__menu[aria-expanded='true']::after {
+    transform: scaleX(1);
+  }
+
+  .nav__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 24px;
+    min-height: 24px;
+    padding-block: 5px;
+    color: var(--paper-38);
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--t-base) var(--ease-out);
+  }
+
+  .nav__link:hover,
+  .nav__link:focus-visible {
+    color: var(--paper);
+  }
+
+  .nav__link:hover::after,
+  .nav__link:focus-visible::after,
+  .nav__link.is-active::after {
+    transform: scaleX(1);
+  }
+
+  .nav__link.is-active {
+    color: var(--paper);
+  }
+
+  /* 窄螢幕顯示中文（短），寬螢幕顯示拉丁（與 mono 語彙一致） */
+  .nav__link-latin {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .nav__link-zh {
+      display: none;
+    }
+    .nav__link-latin {
+      display: inline;
+    }
+  }
+</style>

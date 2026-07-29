@@ -1,0 +1,421 @@
+/* ==========================================================================
+   放映室 — 全站樣式
+   契約見 DESIGN.md。改這裡之前先讀那份。
+   ========================================================================== */
+
+/* --- Tokens ------------------------------------------------------------- */
+
+:root {
+  /* 色：暗，因為亮的是銀幕 */
+  --ink: #0c0c0b;
+  --ink-lift: #141412;
+  --paper: #e9e4d8;
+  --paper-64: rgba(233, 228, 216, 0.64);
+  --paper-38: rgba(233, 228, 216, 0.38);
+  --paper-18: rgba(233, 228, 216, 0.18);
+  --paper-08: rgba(233, 228, 216, 0.08);
+  --red: #ff4433;
+
+  /* 字 */
+  --font-display: 'Sentient', 'Noto Serif TC', 'Songti TC', serif;
+  --font-mono: 'Geist Mono', 'Roboto Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* 間距：費氏 */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 20px;
+  --s5: 32px;
+  --s6: 52px;
+  --s7: 84px;
+  --s8: 136px;
+
+  /* 版心 */
+  --gutter: 20px;
+  --rail: 0px; /* 邊緣標尺佔用的寬度，桌面才給 */
+
+  /* 動態 */
+  --t-fast: 180ms;
+  --t-base: 320ms;
+  --t-curtain: 520ms;
+  --ease-out: cubic-bezier(0.16, 0, 0.06, 1);
+  --ease-io: cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 52px;
+    --rail: 26px;
+  }
+}
+
+/* --- Reset -------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100svh;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+::selection {
+  background: var(--red);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+
+/* 只給螢幕閱讀器 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 跳到主要內容 */
+.skip {
+  position: absolute;
+  top: var(--s3);
+  left: var(--s3);
+  z-index: 10200;
+  padding: var(--s2) var(--s3);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translateY(-200%);
+}
+
+.skip:focus {
+  transform: none;
+}
+
+/* --- 字級 --------------------------------------------------------------- */
+
+/* 巨型片名 */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 200;
+  font-size: clamp(2.75rem, 9.4vw, 8.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+}
+
+/* 中型標題 */
+.t-title {
+  font-family: var(--font-display);
+  font-weight: 200;
+  font-size: clamp(1.9rem, 4.6vw, 3.6rem);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+
+/* 引言／導言 */
+.t-lede {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  line-height: 1.5;
+  letter-spacing: -0.012em;
+  max-width: 34ch;
+}
+
+.t-body {
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  line-height: 1.72;
+  color: var(--paper-64);
+  max-width: 62ch;
+}
+
+/* 首字母義大利體：拉丁字專用的重音符號 */
+.it {
+  font-style: italic;
+}
+
+/* mono metadata：一律大寫、鎖尺寸、不隨視窗縮放 */
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-38);
+  font-variant-numeric: tabular-nums;
+}
+
+.mono-sm {
+  font-size: 10px;
+}
+
+.mono-lg {
+  font-size: 12px;
+}
+
+.mono--bright {
+  color: var(--paper-64);
+}
+
+.mono--red {
+  color: var(--red);
+}
+
+/* --- 版心 --------------------------------------------------------------- */
+
+.wrap {
+  width: 100%;
+  max-width: 1560px;
+  margin-inline: auto;
+  padding-inline: calc(var(--gutter) + var(--rail));
+}
+
+/* --- 元件語彙 ----------------------------------------------------------- */
+
+/* 連結：hover 時從左展開的紅色 1px 底線 */
+.lnk {
+  position: relative;
+  display: inline-block;
+}
+
+.lnk::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--t-base) var(--ease-out);
+}
+
+.lnk:hover::after,
+.lnk:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* 按鈕：方框、mono、hover 反白 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 10px 16px;
+  border: 1px solid var(--paper-18);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-64);
+  background: transparent;
+  transition:
+    background var(--t-base) var(--ease-out),
+    color var(--t-base) var(--ease-out),
+    border-color var(--t-base) var(--ease-out);
+}
+
+.btn:hover,
+.btn:focus-visible {
+  background: var(--paper);
+  border-color: var(--paper);
+  color: var(--ink);
+}
+
+/* 狀態點 */
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--paper-38);
+  flex: none;
+}
+
+.dot--live {
+  background: var(--red);
+}
+
+/* 規線 */
+.rule {
+  height: 1px;
+  background: var(--paper-18);
+  border: 0;
+}
+
+/* --- 打樣佔位框 --------------------------------------------------------
+   素材未到位時顯示。要看起來像排版打樣，不像壞掉。
+   ---------------------------------------------------------------------- */
+
+.ph {
+  position: relative;
+  display: block;
+  width: 100%;
+  border: 1px solid var(--paper-18);
+  background: var(--ink-lift);
+  overflow: hidden;
+}
+
+/* 對角十字線 */
+.ph::before,
+.ph::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--paper-08) 50%, transparent calc(50% + 0.5px));
+  pointer-events: none;
+}
+
+.ph::after {
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--paper-08) 50%, transparent calc(50% + 0.5px));
+}
+
+.ph__tag {
+  position: absolute;
+  left: 8px;
+  bottom: 6px;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--paper-38);
+  pointer-events: none;
+}
+
+.ph__ratio {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--paper-18);
+  pointer-events: none;
+}
+
+/* 顆粒的樣式全部由 Grain.astro 自己帶（含 opacity / 無混合模式 / 抖動），
+   不要在這裡重複宣告 —— 全域規則會蓋掉元件的 scoped 樣式。 */
+
+/* --- 行遮罩 -------------------------------------------------------------
+   把一行字裝進 overflow:hidden 讓它從下方升起。
+   padding/margin 的補償是給下伸部（g、y、p、ç）用的 ——
+   沒有它，靜止狀態下的字尾會被容器切掉。
+   ---------------------------------------------------------------------- */
+
+.ovh {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.18em;
+  margin-bottom: -0.18em;
+}
+
+/* --- 布幕轉場 -----------------------------------------------------------
+   兩片 scaleX 面板，不是全螢幕 clip-path。
+   clip-path 會裁掉 position:fixed 的後代（導覽列首當其衝），而且不走合成器。
+   ---------------------------------------------------------------------- */
+
+.panels {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  pointer-events: none;
+}
+
+.panel {
+  flex: 1;
+  background: var(--ink);
+  transform: scaleX(0);
+  will-change: transform;
+}
+
+/* --- 減少動態 -----------------------------------------------------------
+   不是加速，是直接呈現最終狀態。
+   ---------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .grain {
+    animation: none;
+  }
+
+  .rail__track {
+    transform: none !important;
+  }
+}

@@ -1,0 +1,21 @@
+---
+/**
+ * 作品 —— 放映室本身。
+ *
+ * 這一幕原本在首頁；現在首頁留給「認識人」，作品移到這裡。
+ * 「Work」與「Projects」是同一件事，只有這一個入口。
+ */
+import Base from '../../layouts/Base.astro';
+import Stage from '../../components/Stage.astro';
+import { SITE } from '../../data/site';
+import { STATS } from '../../data/projects';
+---
+
+<Base title="作品" description={`${STATS.total} 件作品，${STATS.live} 件已上線。${SITE.tagline}`} bare>
+  <!-- 畫面上的可見文字全是輪播中的作品名，沒有固定標題。
+       給螢幕閱讀器與搜尋引擎一個真正的 h1。 -->
+  <h1 class="sr-only">
+    作品 — {STATS.total} 件，{STATS.live} 件已上線。{SITE.tagline}
+  </h1>
+  <Stage />
+</Base>

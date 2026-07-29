@@ -1,0 +1,921 @@
+---
+/**
+ * 首頁舞台 —— 開場交棒之後的主畫面。
+ *
+ * 三欄：巨型作品名 ／ 影格 ／ 內容簡介。
+ *
+ * 影格裡放的是**操作網站的錄影**，不是靜態截圖。站主的每個專案都是滾動敘事，
+ * 靜態圖等於把作品最有說服力的部分拿掉。
+ *
+ * **巨型名字不與影格重疊。** 參考站讓字被切斷是成立的，因為他只有一個剛好長到
+ * 要被切的名字；這裡有十一筆長短不一的作品，同一個裝置只會變成缺角。
+ * 字級上限由「最長的一筆要放得進名字欄」反推，不是憑感覺選的。
+ *
+ * 四周的 mono 讀數（分類、片名、編號、時間碼）是放映機的儀表，
+ * 不是裝飾：它們永遠要跟畫面上那一格是同一件事。
+ *
+ * 互動規格沿用站主自己的「電影式步進展示 v2」：
+ * 滾一下換一幕、900ms 冷卻、deltaY ≥ 20。另加上下鍵、觸控滑動、上下偷看格、分類篩選。
+ */
+import { CATS } from '../data/projects';
+// WORKS = PROJECTS ＋ build 時掃到的影片／首格／縮圖。
+// 檔名對了就會出現在站上，不用改資料檔（規則見 src/data/media.ts）。
+import { WORKS as PROJECTS } from '../data/media';
+import Placeholder from './Placeholder.astro';
+
+// 分母是全部 11 件，跟 /work/list 一致。
+// 輪播與列表是同一批作品的兩種看法，不是兩份不同的清單。
+const total = String(PROJECTS.length).padStart(2, '0');
+---
+
+<section class="stage" data-stage aria-roledescription="作品輪播" aria-label="全部作品">
+  <!--
+    滿版背景層。
+
+    參考站的整個視窗就是作品的影像，中央那個影格是另一個窗口 ——
+    兩層在換幕時**一起**開合。原本這裡只做了中央那一層，背景是死的深色，
+    所以換幕只有中間在動，讀起來像投影片，不像放映機在換片。
+
+    整層 aria-hidden：它是氛圍，不是內容。同一支影片的資訊已經由中央影格、
+    名字欄與簡介欄交代過，讓螢幕閱讀器再念一次只是噪音。
+  -->
+  <div class="bg" aria-hidden="true">
+    {
+      PROJECTS.map((p, i) => (
+        <div class="bg__i" data-bg data-i={i}>
+          {p.video ? (
+            <video
+              class="bg__v"
+              src={p.video}
+              poster={p.still ?? undefined}
+              muted
+              loop
+              playsinline
+              preload="none"
+              data-bg-video
+            />
+          ) : p.still ? (
+            <img class="bg__img" src={p.still} alt="" loading="lazy" decoding="async" />
+          ) : null}
+        </div>
+      ))
+    }
+    <!-- 功能性暗場（DESIGN.md 唯一允許的漸層）。沒有它，巨型名字會壓在
+         Mi Español 那種米白畫面上 —— paper 色的字疊在米白上等於隱形。 -->
+    <div class="bg__scrim"></div>
+  </div>
+
+  <!-- 上下偷看格：被視窗邊緣切掉的前一個／下一個 -->
+  <button class="peek peek--up" data-peek="-1" type="button" aria-label="上一個作品">
+    <span class="peek__box">
+      {
+        PROJECTS.map((p, i) => (
+          <span class="peek__i" data-peek-slot={i} aria-hidden="true">
+            <Placeholder src={p.cover} ratio="16 / 9" label={p.latin} />
+          </span>
+        ))
+      }
+    </span>
+  </button>
+
+  <div class="deck">
+    <!-- ① 左：巨型作品名 -->
+    <div class="nm" aria-hidden="true">
+      {
+        PROJECTS.map((p, i) => (
+          <span class="nm__i" data-nm data-i={i}>
+            <span class="ovh">
+              <span class="nm__t" data-nm-line>
+                {p.short}
+              </span>
+            </span>
+          </span>
+        ))
+      }
+    </div>
+
+    <!-- ② 影格 -->
+    <div class="gate">
+      <p class="gate__rail mono">
+        <span class="gate__rail-l" data-cat>建檔</span>
+        <span class="gate__marks" aria-hidden="true">
+          <span class="gate__mark">v</span>
+          <span class="gate__mark">14</span>
+          <span class="gate__mark">v</span>
+        </span>
+        <span class="gate__rail-r" data-kind>實體藏書</span>
+      </p>
+
+      <!-- 這一層在桌面是 display:contents（等於不存在）。
+           窄螢幕時它變成 container-type:size 的量測容器 ——
+           影格要「用剩下的空間」，而剩下多少只有量得到，推算不出來。 -->
+      <div class="gate__box">
+        <div class="gate__frame" data-frame>
+          <span class="br br--tl" aria-hidden="true"></span>
+          <span class="br br--tr" aria-hidden="true"></span>
+          <span class="br br--bl" aria-hidden="true"></span>
+          <span class="br br--br" aria-hidden="true"></span>
+
+          <div class="gate__media">
+            {
+              PROJECTS.map((p, i) => (
+                <div
+                  class="shot"
+                  data-slide
+                  data-i={i}
+                  data-m-cat={p.cat}
+                  data-m-kind={p.kind}
+                  data-m-title={p.latin}
+                  data-m-live={p.href ? '1' : '0'}
+                >
+                  {p.video ? (
+                    <video
+                      class="shot__v"
+                      src={p.video}
+                      poster={p.still ?? undefined}
+                      muted
+                      loop
+                      playsinline
+                      preload={i === 0 ? 'auto' : 'none'}
+                      data-shot-video
+                    />
+                  ) : (
+                    <Placeholder
+                      src={p.still}
+                      ratio="16 / 9"
+                      label={`${p.latin} · 操作錄影`}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      class="shot__img"
+                    />
+                  )}
+                </div>
+              ))
+            }
+          </div>
+
+          <!-- 整格就是進站的按鈕。桌面另有跟著游標跑的標籤；右欄也有明確的按鈕。 -->
+          {
+            PROJECTS.map((p, i) => (
+              <a
+                class="gate__hit"
+                data-hit
+                data-i={i}
+                href={p.href ?? undefined}
+                target={p.href ? '_blank' : undefined}
+                rel={p.href ? 'noopener noreferrer' : undefined}
+                aria-label={p.href ? `進入 ${p.name}（另開視窗）` : `${p.name}：尚未上線`}
+              />
+            ))
+          }
+        </div>
+      </div>
+
+      <p class="gate__foot mono">
+        <span class="gate__foot-l"><span data-counter>01</span>.</span>
+        <span class="gate__foot-c" data-title>BOOKSHELF</span>
+        <span class="gate__foot-r">.{total}</span>
+      </p>
+    </div>
+
+    <!-- ③ 右：內容簡介 -->
+    <div class="info">
+      {
+        PROJECTS.map((p, i) => (
+          <div class="info__i" data-info data-i={i}>
+            <p class="mono info__no">
+              [ {String(i + 1).padStart(2, '0')} · {p.year} ]
+            </p>
+            <p class="info__d">{p.desc}</p>
+            <p class="mono info__m">
+              <span class:list={['dot', { 'dot--live': p.status === 'live' }]} aria-hidden="true" />
+              {p.status === 'live' ? '上線中' : p.status === 'private' ? '不公開' : '進行中'}
+              <span class="info__sep" aria-hidden="true">·</span>
+              {p.tags.join(' / ')}
+            </p>
+            {p.href ? (
+              <a class="btn info__go" href={p.href} target="_blank" rel="noopener noreferrer">
+                進站 <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <span class="btn btn--off info__go">尚未上線</span>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <button class="peek peek--dn" data-peek="1" type="button" aria-label="下一個作品">
+    <span class="peek__box">
+      {
+        PROJECTS.map((p, i) => (
+          <span class="peek__i" data-peek-slot={i} aria-hidden="true">
+            <Placeholder src={p.cover} ratio="16 / 9" label={p.latin} />
+          </span>
+        ))
+      }
+    </span>
+  </button>
+
+  <!-- 跟著游標跑的標籤。桌面限定 —— 觸控裝置沒有游標可跟。 -->
+  <div class="cur" data-cursor aria-hidden="true">
+    <span class="dot dot--live"></span>
+    <span data-cursor-t>進站</span>
+  </div>
+
+  <!-- 底部儀表列 -->
+  <div class="bar">
+    <p class="mono bar__c">© 2026</p>
+
+    <p class="mono bar__c bar__view">
+      <span class="is-on">輪播</span>
+      <span aria-hidden="true">/</span>
+      <a class="lnk" href="/work/list">列表</a>
+    </p>
+
+    <div class="bar__filters">
+      <button class="mono fl is-on" data-filter="" type="button">
+        全部 <span class="fl__n">({PROJECTS.length})</span>
+      </button>
+      {
+        CATS.map((f) => (
+          <button class="mono fl" data-filter={f.cat} type="button">
+            {f.cat} <span class="fl__n">({f.n})</span>
+          </button>
+        ))
+      }
+    </div>
+
+    <p class="mono bar__c bar__tc" data-timecode aria-hidden="true">00:00:00</p>
+
+    <p class="mono bar__c bar__end">
+      <a class="lnk" href="/#about">關於</a>
+    </p>
+  </div>
+
+  <p class="sr-only" role="status" aria-live="polite" data-announce></p>
+</section>
+
+<style>
+  .stage {
+    --gate-w: min(36vw, 520px);
+    --deck-gap: clamp(20px, 2.8vw, 44px);
+    --edge: calc(var(--gutter) + var(--rail));
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow: clip;
+  }
+
+  /* --- 滿版背景層 --------------------------------------------------------- */
+
+  /**
+   * 背景只存在於畫面中央，往邊緣整個衰減掉。
+   *
+   * 為什麼不是靠加濃暗場：所有的儀表（導覽列、巨型名字、右欄簡介、底部分類）
+   * 都住在畫面邊緣。背景鋪滿之後實測的對比是 ——
+   *
+   *     巨型名字 6.73:1 ✅ ／ 右欄簡介 4.18:1 ⚠️ ／ 底部分類 2.20:1 ❌
+   *
+   * 分類那排本來在純底上是 3.4:1，鋪了背景直接掉到 2.2。
+   * 而 --paper-38 這種半透明文字疊在影像上會**跟著背景一起變亮**，
+   * 所以只把字調亮救不回來，得讓字底下真的是純底。
+   *
+   * 把整層用 radial 遮罩收進中央：邊緣完全沒有背景（儀表回到原本的對比），
+   * 中央保留滿版的影像感。這也正好是放映機的樣子 —— 光本來就往邊緣衰減。
+   */
+  .bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    -webkit-mask-image: radial-gradient(
+      ellipse 66% 58% at 50% 46%,
+      #000 0%,
+      #000 38%,
+      transparent 76%
+    );
+    mask-image: radial-gradient(
+      ellipse 66% 58% at 50% 46%,
+      #000 0%,
+      #000 38%,
+      transparent 76%
+    );
+  }
+
+  .bg__i {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    /* 跟中央影格同一條中線、同一個布幕動作 —— 兩層是一個動作的兩個深度，
+       不是兩段各自播完的接力。 */
+    clip-path: polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%);
+    will-change: opacity, clip-path;
+  }
+
+  .bg__v,
+  .bg__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /**
+   * 暗場的強度是**量出來的，不是調到好看為止**。
+   *
+   * 最壞的情況是 Mi Español —— 它整片是米白紙感（約 #F5F0E6）。
+   * paper 色的巨型名字（#E9E4D8）疊在那上面對比是 1.05:1，等於隱形。
+   * 壓到 0.88 之後底色降到約 #241f1c，名字回到 9.4:1（AA 要 4.5）。
+   *
+   * 中央的影格**不受這層影響**（它在 .deck 裡、疊在暗場之上），
+   * 所以「亮的是銀幕、周圍沉下去」這條世界觀反而更成立了。
+   */
+  .bg__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(12, 12, 11, 0.88);
+  }
+
+  /* --- 三欄：名字 ／ 影格 ／ 簡介 ---------------------------------------- */
+
+  .deck {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    /* 名字欄比簡介欄寬一點 —— 巨型襯線吃寬度，內文吃行數 */
+    grid-template-columns: 1.1fr var(--gate-w) 0.9fr;
+    gap: var(--deck-gap);
+    align-items: center;
+    width: 100%;
+    padding-inline: var(--edge);
+  }
+
+  /* --- ① 名字 ---------------------------------------------------------- */
+
+  .nm {
+    display: grid;
+    grid-template-areas: 'stack';
+    align-items: center;
+    justify-items: end;
+    text-align: right;
+    min-width: 0;
+  }
+
+  .nm__i {
+    grid-area: stack;
+    display: block;
+    max-width: 100%;
+  }
+
+  .nm__t {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 200;
+    /* 上限由「最長的一筆 short 要放得進名字欄」反推，不是憑感覺選的。
+       名字絕不與影格重疊 —— 缺角的巨型字不是戲劇性，是排版錯誤。 */
+    font-size: clamp(2.2rem, 4.9vw, 5rem);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    transform: translateY(112%);
+    will-change: transform;
+  }
+
+  /* --- ② 影格 ---------------------------------------------------------- */
+
+  .gate {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .gate__rail,
+  .gate__foot {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--s3);
+  }
+
+  .gate__rail-r,
+  .gate__foot-r {
+    text-align: right;
+  }
+
+  .gate__rail-l,
+  .gate__rail-r,
+  .gate__foot-c {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gate__foot-c {
+    color: var(--paper-64);
+    letter-spacing: 0.14em;
+    text-align: center;
+  }
+
+  .gate__marks {
+    display: flex;
+    gap: 6px;
+  }
+
+  .gate__mark {
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--paper-18);
+    border-radius: 50%;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--paper-38);
+  }
+
+  /* 桌面：這一層不存在，影格直接是 .gate 的 flex 子元素 */
+  .gate__box {
+    display: contents;
+  }
+
+  .gate__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--ink-lift);
+  }
+
+  /* 片門角標 */
+  .br {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    z-index: 3;
+    pointer-events: none;
+    border: 0 solid var(--paper-64);
+  }
+  .br--tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
+  .br--tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
+  .br--bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
+  .br--br { bottom: -1px; right: -1px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  .gate__media {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .shot {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    clip-path: polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%);
+    will-change: opacity, clip-path;
+  }
+
+  .shot__v,
+  .shot :global(.ph),
+  .shot :global(.ph-img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: auto !important;
+  }
+
+  .shot :global(.ph) {
+    border: 0;
+  }
+
+  .gate__hit {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: none;
+  }
+
+  .gate__hit[data-active] {
+    display: block;
+  }
+
+  /* --- ③ 簡介 ---------------------------------------------------------- */
+
+  .info {
+    display: grid;
+    grid-template-areas: 'stack';
+    align-items: center;
+    min-width: 0;
+  }
+
+  .info__i {
+    grid-area: stack;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s3);
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform;
+  }
+
+  .info__d {
+    font-size: clamp(0.95rem, 1.05vw, 1.05rem);
+    line-height: 1.72;
+    color: var(--paper-64);
+    max-width: 34ch;
+  }
+
+  .info__m {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .info__sep {
+    color: var(--paper-18);
+  }
+
+  .info__go {
+    margin-top: var(--s1);
+  }
+
+  .btn--off {
+    color: var(--paper-38);
+    cursor: default;
+  }
+
+  /* --- 上下偷看格 --------------------------------------------------------- */
+
+  .peek {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+    width: min(18vw, 260px);
+    z-index: 1;
+    padding: 0;
+    opacity: 0.45;
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+
+  .peek:hover,
+  .peek:focus-visible {
+    opacity: 1;
+  }
+
+  .peek--up {
+    top: 0;
+    translate: -50% -60%;
+  }
+
+  .peek--dn {
+    bottom: 0;
+    translate: -50% 60%;
+  }
+
+  .peek__box {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+  }
+
+  .peek__i {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .peek__i[data-active] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .peek__i :global(.ph),
+  .peek__i :global(.ph-img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: auto !important;
+  }
+
+  /* --- 跟著游標跑的標籤 ----------------------------------------------------- */
+
+  .cur {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 500;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: rgba(12, 12, 11, 0.72);
+    border: 1px solid var(--paper-18);
+    pointer-events: none;
+    opacity: 0;
+    will-change: transform;
+  }
+
+  @media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+    .cur {
+      display: flex;
+    }
+  }
+
+  /* --- 底部儀表列 ------------------------------------------------------- */
+
+  /* 不放進度刻度：一排小橫條讀起來像進度條，是後台的語彙，不是放映室的。
+     位置由影格下方的 01. / .11 交代就夠了。 */
+  .bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--s4);
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    /* 不用 space-between 平均分散 —— 左邊是「這是什麼」（版權、檢視方式），
+       右邊是「機器的讀數」（分類、時間碼、出口），中間那段空白就是分組的方式。 */
+    justify-content: flex-start;
+    gap: clamp(20px, 4vw, 64px);
+    padding-inline: var(--edge);
+  }
+
+  .bar__view {
+    margin-left: clamp(16px, 5vw, 110px);
+  }
+
+  .bar__c {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+  }
+
+  /* min-height 要下在 <a> 本身，不是外層的 <p> —— 觸控目標量的是連結的框
+     （WCAG 2.2 SC 2.5.8，24×24） */
+  .bar a {
+    display: inline-flex;
+    align-items: center;
+    /* 26 而不是剛好 24：次像素捨入會讓 24 量出來變 23.99，卡在門檻上。
+       橫向也補一點 —— 「列表」兩個中文字只有 23px 寬。 */
+    min-height: 26px;
+    padding-inline: 3px;
+  }
+
+  .bar__view .is-on {
+    color: var(--paper);
+  }
+
+  .bar__tc {
+    font-variant-numeric: tabular-nums;
+    color: var(--paper-38);
+  }
+
+  /* 分類是直排、由下往上長，最後一項落在跟版權、時間碼、出口同一條底線上。
+     橫排成一列會讀成標籤雲。 */
+  .bar__filters {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-left: auto;
+  }
+
+  .fl {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* 24 高 ＋ 2px 間距 = 26px 節距。直排的觸控目標之間要留得夠開，
+       否則 WCAG 2.2 SC 2.5.8 的間距例外也救不了（24px 的圓會互相重疊）。 */
+    min-height: 24px;
+    padding: 0;
+    /* paper-64 而不是 paper-38。這些是**按鈕**不是說明文字 ——
+       WCAG 對文字要求 4.5:1，paper-38 在純底上只有 3.4:1，鋪了背景更掉到 3.06。
+       選中與否的區別交給紅點與 paper 全亮，不靠「暗到看不清楚」來表達。 */
+    color: var(--paper-64);
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  /* 圓點在未選中時是透明的，但位置要佔著 —— 否則文字會左右跳一格 */
+  .fl::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: transparent;
+    flex: none;
+  }
+
+  .fl:hover,
+  .fl:focus-visible {
+    color: var(--paper);
+  }
+
+  .fl.is-on {
+    color: var(--paper);
+  }
+
+  .fl.is-on::before {
+    background: var(--red);
+  }
+
+  .fl__n {
+    font-style: italic;
+    color: var(--paper-38);
+  }
+
+  /* --- 中等寬度：影格讓位，三欄變兩欄 ------------------------------------ */
+
+  @media (max-width: 1180px) {
+    .stage {
+      --gate-w: min(44vw, 520px);
+    }
+    .deck {
+      grid-template-columns: 1fr var(--gate-w);
+      grid-template-areas: 'nm gate' 'info gate';
+      align-items: start;
+      row-gap: var(--s4);
+    }
+    .nm {
+      grid-area: nm;
+      justify-items: start;
+      text-align: left;
+      align-self: end;
+    }
+    .gate {
+      grid-area: gate;
+      align-self: center;
+    }
+    .info {
+      grid-area: info;
+      align-self: start;
+    }
+    .info__i {
+      align-items: flex-start;
+    }
+  }
+
+  /* --- 窄螢幕：全部疊成一欄 ---------------------------------------------- */
+
+  @media (max-width: 899px) {
+    /**
+     * 堆疊版面必須**剛好一個視窗高**，一格都不能多。
+     *
+     * 原本是 `min-height: 100svh` ＋ 直排的名字／影格／簡介，內容一長就把舞台撐出視窗
+     * （實測 861×540 溢出 435px）。後果不只是多一條捲軸 —— 這一頁的滾輪是用來換幕的，
+     * 頁面自己能捲之後，滾一下就同時換幕**又**捲頁，巨型名字被捲到固定的導覽列底下，
+     * 整頁讀起來像壞掉。
+     *
+     * 所以：高度鎖死，然後讓每一塊都跟著視窗高縮 —— 只鎖高度不縮內容會變成裁掉底部的
+     * 儀表列，那比捲軸更糟。
+     */
+    .stage {
+      --gate-w: 100%;
+      min-height: 0;
+      height: 100svh;
+      /* stretch 不是 center —— 置中的 grid item 高度是**內容**決定的，
+         `.deck { height: 100% }` 就解析不出來，底下整條 minmax(0,1fr) 全部歸零
+         （實測影格塌成 0×0）。撐滿之後高度才有依據，視覺置中改由 .deck 內部處理。 */
+      place-items: stretch;
+      /* 上內距的下限是 72 不是 60 —— 導覽列底緣在 66px，60 會讓巨型名字貼上去。 */
+      padding-block: clamp(72px, 9svh, 84px) clamp(76px, 13svh, 128px);
+    }
+
+    /* 影格吃「名字與簡介用剩的」，不是一個寫死的 svh 分數。
+       固定分數在高視窗給太少、矮視窗給太多 —— minmax(0,1fr) 才是這件事的正確工具。 */
+    .deck {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'nm' 'gate' 'info';
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      height: 100%;
+      gap: clamp(8px, 1.6svh, 20px);
+      padding-inline: var(--gutter);
+      min-height: 0;
+      /* 蓋掉桌面的 align-items: center —— 置中的話 .gate 只會長到內容高（實測 52px），
+         中間那列 196px 的空間它一格都不拿，量測容器就是 0。 */
+      align-items: stretch;
+    }
+
+    .nm__t {
+      /* 兩個上限：寬度給的（10vw）與高度給的（6.4svh）。矮視窗由後者接管。 */
+      font-size: min(clamp(2rem, 10vw, 3.4rem), 6.4svh);
+    }
+
+    /* 改成 grid：影格自己站一列 minmax(0,1fr)。
+       原本是 flex column，子元素的 100% 指的是整個 .gate 的高度（含上下標籤），
+       所以高度限制永遠算不對。 */
+    .gate {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: 100%;
+      min-height: 0;
+      /* 中等斷點有一條 `.gate { align-self: center }`，直接下在子元素上，
+         父層的 align-items 蓋不過去。不還原成 stretch 的話 .gate 只長到內容高
+         （實測 52px），中間那列 196px 的空間一格都不拿，量測容器就是 0。 */
+      align-self: stretch;
+    }
+
+    /* 量測容器：1fr 那一列有多高、多寬，這裡讀得到（100cqh / 100cqw）。 */
+    .gate__box {
+      display: block;
+      min-height: 0;
+      container-type: size;
+    }
+
+    /**
+     * 16:9 塞進一個高寬都會變的框，比例不准跑掉。
+     *
+     * 試過兩條純 CSS 的路，都不行（實測，不是推論）：
+     *   width:100% ＋ max-height  ✗ 寬是指定的，高由比例算完被 max-height 砍掉，
+     *                              寬不會跟著收 → 861×540 影格照樣 439px 高，被切掉一角
+     *   height:100% ＋ width:auto ✗ 百分比高在這個 grid 鏈上解析不出來 → 整格塌成 0×0
+     *
+     * 會動的是量出來：高度取「這一列剩多少」與「寬度能給多少」之中的小者，
+     * 寬度再由 aspect-ratio 自動算回去。
+     */
+    .gate__frame {
+      height: min(100cqh, calc(100cqw * 9 / 16));
+      width: auto;
+      margin-inline: auto;
+      min-height: 0;
+    }
+
+    /* 簡介欄原本完全不跟著視窗高縮：34ch ＋ line-height 1.72，
+       在 375px 會拆成四行，整欄 189px —— 比影格還高。這是矮視窗塞不下的主因。 */
+    .info__i {
+      gap: clamp(6px, 1.4svh, 16px);
+    }
+    .info__d {
+      line-height: 1.58;
+    }
+    .info__go {
+      margin-top: 0;
+    }
+
+    .peek {
+      display: none;
+    }
+    .bar {
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--s2) var(--s4);
+      bottom: var(--s3);
+      padding-inline: var(--gutter);
+    }
+    .bar__view {
+      margin-left: 0;
+    }
+    /* 窄螢幕改回橫排：六項直排會吃掉半個手機畫面 */
+    .bar__filters {
+      order: 3;
+      width: 100%;
+      margin-left: 0;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 2px var(--s3);
+    }
+  }
+
+  /**
+   * 矮視窗：簡介收成三行（很矮時兩行）。
+   *
+   * 這一步是有代價的 —— DESIGN.md 說右欄「要能容納完整的一句話」。
+   * 但算過了：375×480 光是簡介(189) ＋ 名字(33) 就佔掉 222，可用空間只有 344，
+   * 硬留全文會把影格壓到 70px 高，等於把這一頁唯一的證據銷毀。
+   * 影格才是主角，完整簡介在列表頁（/work/list）看得到。
+   */
+  @media (max-width: 899px) and (max-height: 700px) {
+    .info__d {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow: hidden;
+    }
+  }
+
+  @media (max-width: 899px) and (max-height: 580px) {
+    .info__d {
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .bar__tc,
+    .bar__end {
+      display: none;
+    }
+  }
+</style>

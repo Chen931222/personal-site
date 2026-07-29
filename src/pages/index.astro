@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import Intro from '../components/Intro.astro';
+import About from '../components/About.astro';
+import { SITE } from '../data/site';
+---
+
+<!-- 首頁＝開場動畫 → 往下捲＝關於我。
+     作品在右上角的「作品」（= /work），不在這一頁 ——
+     先讓人認識人，再讓人看作品。 -->
+<Base title="首頁" description={SITE.tagline} intro bare>
+  <Intro />
+  <About />
+</Base>

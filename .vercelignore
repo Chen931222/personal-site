@@ -1,0 +1,24 @@
+# ⚠️ 曾經把 190MB 的照片與備份推上公開網站。部署前務必確認這份清單。
+# 規則：原始素材一律不上傳，只上傳壓縮過、放在 public/media/ 的成品。
+
+raw/
+footage/
+*.MOV
+*.mov
+*.psd
+*.ai
+*.sketch
+*.fig
+
+# 專案文件不需要進 build
+PRODUCT.md
+DESIGN.md
+README.md
+
+node_modules/
+.astro/
+.git/
+
+# 錄影管線：自己帶 node_modules 與 Playwright 的暫存，而且產物已經在 public/media/。
+# 整包上傳等於把工具鏈推上公開網站。
+tools/

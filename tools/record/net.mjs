@@ -1,0 +1,10 @@
+﻿import { chromium } from 'playwright-core';
+const b = await chromium.launch({ executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless:true });
+const p = await (await b.newContext({viewport:{width:1920,height:1080}})).newPage();
+const fails=[];
+p.on('response', r => { if (r.status()>=400) fails.push(r.status()+' '+r.url()); });
+p.on('requestfailed', r => fails.push('FAIL '+r.url()+' '+(r.failure()?.errorText||'')));
+await p.goto('http://localhost:4321/',{waitUntil:'load'});
+await new Promise(r=>setTimeout(r,4000));
+console.log(fails.length? fails.join('\n') : '沒有失敗的請求');
+await b.close();

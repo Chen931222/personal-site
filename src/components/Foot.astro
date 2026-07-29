@@ -1,0 +1,86 @@
+---
+import { SITE } from '../data/site';
+import { STATS } from '../data/projects';
+import Social from './Social.astro';
+
+const year = 2026;
+const links = SITE.contact.links.filter((l) => l.href);
+---
+
+<footer class="foot">
+  <hr class="rule" />
+  <div class="foot__grid">
+    <div class="foot__col">
+      <p class="mono mono-sm">[ 聯絡 ]</p>
+      <a class="foot__mail lnk" href={`mailto:${SITE.contact.email}`}>
+        {SITE.contact.email}
+      </a>
+      {
+        links.length > 0 && (
+          <ul class="foot__links">
+            {links.map((l) => (
+              <li>
+                <Social label={l.label} href={l.href} />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <div class="foot__col foot__col--end">
+      <p class="mono mono-sm">
+        [ {String(STATS.live).padStart(2, '0')} 上線 · {String(STATS.wip).padStart(2, '0')} 在路上 ]
+      </p>
+      <p class="mono mono-sm">© {year} · 仍在建檔中</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    padding: var(--s7) calc(var(--gutter) + var(--rail)) var(--s5);
+  }
+
+  .foot__grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s6);
+    padding-top: var(--s5);
+  }
+
+  .foot__col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s3);
+  }
+
+  .foot__col--end {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  @media (min-width: 768px) {
+    .foot__col--end {
+      align-items: flex-end;
+      text-align: right;
+    }
+  }
+
+  .foot__mail {
+    display: inline-block;
+    min-height: 24px;
+    font-family: var(--font-display);
+    font-weight: 200;
+    font-size: clamp(1.35rem, 3.4vw, 2.4rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .foot__links {
+    display: flex;
+    gap: var(--s4);
+    margin-top: var(--s2);
+  }
+</style>

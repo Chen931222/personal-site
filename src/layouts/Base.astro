@@ -1,0 +1,206 @@
+---
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import { SITE } from '../data/site';
+import Nav from '../components/Nav.astro';
+import Menu from '../components/Menu.astro';
+import Foot from '../components/Foot.astro';
+import Grain from '../components/Grain.astro';
+import Rails from '../components/Rails.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** 首頁才播開場動畫 */
+  intro?: boolean;
+  /** 首頁的舞台要滿版，不要頁尾 */
+  bare?: boolean;
+}
+
+const {
+  title,
+  description = SITE.tagline,
+  intro = false,
+  bare = false,
+} = Astro.props;
+
+const fullTitle = `${title} — ${SITE.name.latin.a} ${SITE.name.latin.b}`;
+const path = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0c0c0b" />
+    <link rel="canonical" href={new URL(path, Astro.site)} />
+
+    <!-- 沒有這一行，瀏覽器會自己去要 /favicon.ico，拿到 404 —— 每個來源的第一次載入
+         都會在 console 留一筆錯誤，看起來像偶發的載入失敗，其實只是沒放圖示。 -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- 拉丁 display + mono：build 時自架、預載 -->
+    <Font cssVariable="--f-sentient" preload />
+    <Font cssVariable="--f-mono" preload />
+
+    <!-- 中文襯線：走 Google CDN，交給它做 unicode-range 分段 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;600&display=swap"
+    />
+
+    <ClientRouter />
+
+    <!-- 這支必須是 inline 且在 <head>：它決定第一格畫面長什麼樣，
+         晚一步就是「閃一下才消失」。 -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+
+        // 有 JS 才需要把東西先藏起來等動畫。沒有 JS 的瀏覽器不會跑到這一行，
+        // 那裡的 CSS 一律呈現最終狀態 —— 開場的影格、關於我的各幕都直接看得到。
+        d.setAttribute('data-js', '');
+
+        // 保險：模組沒跑起來（網路斷、解析失敗）時，內容不能永遠留在 opacity:0。
+        // 模組一載入就會下 data-motion，正常情況下這條不會觸發。
+        setTimeout(function () {
+          if (!d.hasAttribute('data-motion')) d.removeAttribute('data-js');
+        }, 2500);
+
+        // 回訪、減少動態、或帶著 #錨點 進站時，開場在第一格畫面就不存在。
+        // 錨點那條是必要的：訪客指名要去某一段，不該先被關進四秒的片頭，
+        // 而且開場會鎖捲動，捲動一鎖住，瀏覽器就跳不到錨點。
+        try {
+          if (
+            location.hash ||
+            sessionStorage.getItem('screening-room:intro-played') === '1' ||
+            matchMedia('(prefers-reduced-motion: reduce)').matches
+          ) {
+            d.setAttribute('data-no-intro', '');
+          }
+        } catch (e) {
+          if (location.hash) d.setAttribute('data-no-intro', '');
+        }
+
+        // 帶錨點進站的人要「直接在那裡」，不該看著開場那一幕從眼前捲過去 ——
+        // 而且圖片與字體邊載邊排版時，平滑捲動會追著一個還在移動的目標跑，
+        // 停下來的位置是錯的。站內點「關於」的平滑捲動不受影響：load 之後就還回去。
+        if (location.hash) {
+          d.style.scrollBehavior = 'auto';
+          addEventListener('load', function () {
+            setTimeout(function () {
+              d.style.removeProperty('scroll-behavior');
+            }, 60);
+          });
+        }
+      })();
+    </script>
+  </head>
+
+  <body data-intro={intro ? 'true' : undefined}>
+    <a class="skip" href="#main">跳到主要內容</a>
+
+    <Grain />
+    <Rails />
+
+    <!-- 頁面轉場的布幕：兩片 scaleX 面板（不用全螢幕 clip-path —— 那會裁掉 fixed 的導覽列，
+         而且不走合成器，每格重繪整個子樹） -->
+    <div class="panels" aria-hidden="true">
+      <div class="panel" data-panel></div>
+      <div class="panel" data-panel></div>
+    </div>
+
+    <Nav path={path} />
+    <Menu />
+
+    <main id="main" class={bare ? 'main main--bare' : 'main'}>
+      <slot />
+    </main>
+
+    {!bare && <Foot />}
+
+    <script>
+      import { initMotion } from '../lib/motion';
+      import { initRails } from '../lib/rails';
+      import { initMenu } from '../lib/menu';
+      import { playIntro, replayIntro } from '../lib/intro';
+      import { initStage } from '../lib/stage';
+      import { initAbout } from '../lib/about';
+
+      // 告訴 <head> 那支保險：模組活著，不用把 data-js 拆掉。
+      // 下在模組作用域（不是 boot 裡）—— import 都成功了就代表動態這條路是通的。
+      document.documentElement.setAttribute('data-motion', '');
+
+      // document 層的監聽只掛一次
+      initMotion();
+
+      // 點頁首的名字＝再看一次開場。
+      // 用事件委派掛在 document 上，換頁後不用重掛（導覽列會被換掉）。
+      //
+      // ⚠️ 必須是 capture 階段。ClientRouter 也在 document 上聽 click，而且它註冊得比較早，
+      //    在 bubble 階段會先跑 —— 它會先開始換頁，等我們的 preventDefault() 已經來不及，
+      //    剛叫出來的開場會被接下來的 DOM swap 當場銷毀（實測事件序列：
+      //    before-preparation → intro:start → before-swap → ...，開場一格都沒播到）。
+      document.addEventListener(
+        'click',
+        (e) => {
+          const mark = e.target instanceof Element && e.target.closest('[data-replay]');
+          if (!mark) return;
+          // replayIntro() 在首頁會就地重播並回傳 true；
+          // 不在首頁就只清掉 session 旗標，讓連結照常導回首頁，到站後自然播放。
+          if (replayIntro()) e.preventDefault();
+        },
+        { capture: true }
+      );
+
+      // astro:page-load 首次載入也會觸發，換頁後同樣觸發 → 一個入口涵蓋兩種情況
+      const boot = () => {
+        initRails();
+        initMenu();
+        // 順序有意義：接手開場的那一幕要先掛好 intro:start / intro:done 的監聽，
+        // 否則「回訪直接跳過開場」那條路徑會同步發事件，還沒在聽就錯過了。
+        // （首頁是 initAbout 的銀幕，/work 是 initStage 的舞台，各自會自己判斷在不在。）
+        initAbout();
+        initStage();
+        playIntro();
+      };
+      document.addEventListener('astro:page-load', boot);
+    </script>
+
+    <style is:global>
+      /* Astro 產出的字體變數接回設計 token。
+         順序自己排：Sentient 沒有中文字 → 交棒給 Noto Serif TC → 才是系統襯線。
+         （--f-mono 自帶 ui-monospace, monospace 收尾，不用再補。） */
+      :root {
+        --font-display: var(--f-sentient), 'Noto Serif TC', 'Songti TC', 'PMingLiU', serif;
+        --font-mono: var(--f-mono);
+      }
+
+      html[data-no-intro] .intro {
+        display: none !important;
+      }
+
+      .main {
+        position: relative;
+        z-index: 1;
+        padding-top: 96px;
+      }
+
+      .main--bare {
+        padding-top: 0;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,321 @@
+---
+/**
+ * 遊記 —— 從小到大去過的國家與地方。
+ *
+ * 為什麼是**帳本**不是相簿牆：
+ *   這一站的組織原理是「一件一件建檔」。衣櫃記衣服、書櫃記書、唱片架記唱片，
+ *   這一份記走過的路。相簿牆會把它變成一堆風景照（那是每個人都有的東西）；
+ *   編號、國碼、年份、地名排成一列一列，才讀得出「這是一份被好好記下來的帳」。
+ *
+ * 照片是**附註**不是主角：有就掛在那一列下面，沒有那一列照樣成立。
+ * 這樣站主可以先把名單填完，照片慢慢補。
+ */
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+import { TRIPS_SORTED, TRIP_STATS } from '../data/journal';
+import { tripPhotos, journalSize } from '../data/media';
+
+// 年份換了就下一個年份標 —— 讀的時候才有「一路走下來」的節奏
+let lastYear: number | null = null;
+
+const rows = TRIPS_SORTED.map((t, i) => {
+  const newYear = t.year !== lastYear;
+  lastYear = t.year;
+  const photos = tripPhotos(t.id).map((src) => {
+    const s = journalSize(src);
+    return { src, ratio: s ? `${s.w} / ${s.h}` : '3 / 2' };
+  });
+  return { t, i, newYear, photos };
+});
+
+const span =
+  TRIP_STATS.from && TRIP_STATS.to
+    ? TRIP_STATS.from === TRIP_STATS.to
+      ? String(TRIP_STATS.from)
+      : `${TRIP_STATS.from} — ${TRIP_STATS.to}`
+    : null;
+---
+
+<Base title="遊記" description="去過的國家與地方。">
+  <header class="wrap head">
+    <p class="mono">[ JOURNAL ]</p>
+    <h1 class="t-display head__h">去過的<br /><em class="head__ac">地方</em></h1>
+    <p class="t-lede head__lede">
+      衣櫃記衣服，書櫃記書，這一份記走過的路。<br />
+      一列一趟，照年份由早到晚。
+    </p>
+
+    {
+      TRIP_STATS.trips > 0 && (
+        <div class="head__stats">
+          <p class="mono">
+            <span class="dot dot--live" aria-hidden="true" />
+            {String(TRIP_STATS.countries).padStart(2, '0')} 個國家
+          </p>
+          <p class="mono">
+            <span class="dot" aria-hidden="true" />
+            {String(TRIP_STATS.places).padStart(2, '0')} 個地方
+          </p>
+          <p class="mono">
+            <span class="dot" aria-hidden="true" />
+            {String(TRIP_STATS.trips).padStart(2, '0')} 趟
+          </p>
+          {span && <p class="mono head__span">{span}</p>}
+        </div>
+      )
+    }
+  </header>
+
+  {
+    rows.length > 0 ? (
+      <section class="wrap ledger">
+        <ol class="rows">
+          {rows.map(({ t, i, newYear, photos }) => (
+            <li class="row">
+              {newYear && (
+                <p class="mono row__year" aria-hidden="true">
+                  {t.year}
+                </p>
+              )}
+              <div class="row__in">
+                <span class="mono row__num">{String(i + 1).padStart(2, '0')}</span>
+                <span class="mono row__code">{t.code}</span>
+
+                <span class="row__body">
+                  <span class="row__country t-title">
+                    {t.country}
+                    <span class="mono row__latin">{t.latin}</span>
+                  </span>
+                  <span class="mono row__places">{t.places.join(' / ')}</span>
+                  {t.note && <span class="row__note t-body">{t.note}</span>}
+                </span>
+
+                <span class="mono row__y">{t.year}</span>
+              </div>
+
+              {photos.length > 0 && (
+                <ul class="strip">
+                  {photos.map((p, n) => (
+                    <li class="strip__i" style={`aspect-ratio:${p.ratio}`}>
+                      <img
+                        src={p.src}
+                        alt={`${t.country}${t.places[0] ? ' · ' + t.places[0] : ''}`}
+                        loading={i < 2 && n < 2 ? 'eager' : 'lazy'}
+                        decoding="async"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
+    ) : (
+      /* 空帳。刻意不放假資料 —— 這一頁上的每個地名都必須是真的去過的。 */
+      <section class="wrap empty">
+        <p class="mono empty__tag">[ 空帳 ]</p>
+        <p class="t-lede empty__t">這份帳還沒開始記。</p>
+        <p class="t-body empty__d">
+          第一筆寫進 <code class="mono">src/data/journal.ts</code>，這一頁就會自己長出來 ——
+          統計、年份分節、照片全部自動接上。
+        </p>
+      </section>
+    )
+  }
+
+  <section class="wrap tail">
+    <p class="t-body">
+      還在走。想到哪裡就會補上來。
+      <a class="lnk" href={`mailto:${SITE.contact.email}`}>寫信給我 →</a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding-block: var(--s6) var(--s6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s3);
+  }
+
+  .head__h {
+    margin-top: var(--s2);
+  }
+
+  .head__ac {
+    font-style: italic;
+    color: var(--red);
+  }
+
+  .head__lede {
+    margin-top: var(--s3);
+    color: var(--paper-64);
+  }
+
+  .head__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s3) var(--s5);
+    margin-top: var(--s3);
+  }
+
+  .head__stats p {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    min-height: 24px;
+  }
+
+  .head__span {
+    color: var(--paper-38);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- 帳本 -------------------------------------------------------------- */
+
+  .ledger {
+    padding-bottom: var(--s6);
+  }
+
+  /* 年份標：換年才出現，像帳本上翻過一頁 */
+  .row__year {
+    margin-top: var(--s5);
+    padding-bottom: var(--s2);
+    border-bottom: 1px solid var(--paper-18);
+    color: var(--red);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row + .row .row__in {
+    border-top: 1px solid var(--paper-08);
+  }
+
+  /* 年份標下面的第一列不要再畫一條線 —— 兩條線疊在一起會讀成表格 */
+  .row__year + .row__in {
+    border-top: 0;
+  }
+
+  .row__in {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    gap: var(--s2) var(--s4);
+    align-items: baseline;
+    padding-block: var(--s4);
+  }
+
+  .row__num {
+    color: var(--paper-38);
+  }
+
+  /* 國碼：這份帳唯一的「機器讀數」，跟作品頁的 [WORK] 索引同一個聲音 */
+  .row__code {
+    color: var(--paper);
+    letter-spacing: 0.14em;
+  }
+
+  .row__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    min-width: 0;
+  }
+
+  .row__country {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--s3);
+  }
+
+  .row__latin {
+    color: var(--paper-38);
+  }
+
+  .row__places {
+    color: var(--paper-64);
+  }
+
+  .row__note {
+    color: var(--paper-64);
+    max-width: 54ch;
+  }
+
+  .row__y {
+    color: var(--paper-38);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- 照片：附註，不是主角 ---------------------------------------------- */
+
+  .strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s2);
+    padding-bottom: var(--s4);
+    /* 對齊國家名那一欄，不是切齊版心 —— 照片是掛在那一列底下的 */
+    padding-left: 0;
+  }
+
+  @media (min-width: 700px) {
+    .strip {
+      padding-left: calc(2ch + 3ch + var(--s4) * 2);
+    }
+  }
+
+  .strip__i {
+    height: clamp(96px, 13vw, 168px);
+    width: auto;
+    flex: none;
+    overflow: hidden;
+  }
+
+  .strip__i img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* --- 空帳 -------------------------------------------------------------- */
+
+  .empty {
+    padding-block: var(--s5) var(--s7);
+    border-top: 1px solid var(--paper-18);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s3);
+  }
+
+  .empty__tag {
+    color: var(--red);
+  }
+
+  .empty__d {
+    color: var(--paper-64);
+    max-width: 56ch;
+  }
+
+  .empty__d code {
+    color: var(--paper);
+  }
+
+  /* --- 收尾 -------------------------------------------------------------- */
+
+  .tail {
+    padding-block: var(--s5) var(--s7);
+    border-top: 1px solid var(--paper-18);
+    color: var(--paper-64);
+  }
+
+  @media (max-width: 699px) {
+    .row__in {
+      grid-template-columns: auto auto minmax(0, 1fr);
+    }
+    .row__y {
+      grid-column: 3;
+      grid-row: 2;
+    }
+  }
+</style>

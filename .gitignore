@@ -1,0 +1,25 @@
+# build
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# env
+.env
+.env.production
+
+# vercel
+.vercel/
+
+# 原始素材（大檔）：只把壓過的成品放進 public/media/
+raw/
+footage/
+*.MOV
+*.mov
+
+# os
+.DS_Store
+Thumbs.db
+
+.vercel

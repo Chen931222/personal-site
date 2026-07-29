@@ -1,0 +1,309 @@
+[
+  {
+    "slug": "mi-espanol",
+    "url": "https://mi-espanol-web.vercel.app",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "Mi Español · 我的西班牙文學習筆記",
+      "scrollH": 1172,
+      "screens": 1.6,
+      "sections": 9,
+      "sticky": 7,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 0,
+      "buttons": [
+        "今天今天Hoy",
+        "對話練習對話Conversación",
+        "文法筆記文法Gramática",
+        "歌詞分析歌詞Canciones",
+        "單字卡單字Vocabulario",
+        "綜合練習練習Ejercicios",
+        "動詞練習動詞Verbos",
+        "聽力口說聽說Escuchar y hablar",
+        "學習進度進度Progreso",
+        "產品導覽導覽Tour",
+        "配對小遊戲三分鐘熱身"
+      ],
+      "h1": "Mi Español我的西班牙文學習筆記"
+    },
+    "bottomShot": {
+      "y": 452,
+      "visible": 37
+    }
+  },
+  {
+    "slug": "worldcup-2026",
+    "url": "https://worldcup-2026-bet.vercel.app",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "總覽｜盤口筆記",
+      "scrollH": 720,
+      "screens": 1,
+      "sections": 14,
+      "sticky": 58,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 0,
+      "buttons": [
+        "自動導覽",
+        "跳過開場，直接進入 →",
+        "盤口筆記",
+        "Cases",
+        "About",
+        "Products"
+      ],
+      "h1": "盤口筆記"
+    },
+    "bottomShot": {
+      "y": 0,
+      "visible": 75
+    }
+  },
+  {
+    "slug": "dream-car-garage",
+    "url": "https://dream-car-garage.chenchen931222.workers.dev",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "我的夢想車庫 · 電影式展示",
+      "scrollH": 720,
+      "screens": 1,
+      "sections": 0,
+      "sticky": 13,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 9,
+      "buttons": [
+        "引擎聲",
+        "自動導覽",
+        "W202",
+        "MX-5",
+        "Macan",
+        "BMW X5",
+        "Q50",
+        "R350",
+        "Mazda 3",
+        "Mustang",
+        "AMG GT",
+        "Build Yours"
+      ],
+      "h1": "我的夢想車庫"
+    },
+    "bottomShot": {
+      "y": 0,
+      "visible": 22
+    }
+  },
+  {
+    "slug": "bookshelf",
+    "url": "https://bookshelf-nine-gamma.vercel.app/",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "書櫃",
+      "scrollH": 720,
+      "screens": 1,
+      "sections": 2,
+      "sticky": 18,
+      "canvas": 1,
+      "video": 0,
+      "imgs": 0,
+      "buttons": [
+        "Close",
+        "清單",
+        "回主頁",
+        "Close",
+        "Close",
+        "Close"
+      ],
+      "h1": "留言 · 推薦一本書"
+    },
+    "bottomShot": {
+      "y": 0,
+      "visible": 44
+    }
+  },
+  {
+    "slug": "record-shelf",
+    "url": "https://record-shelf-nine.vercel.app",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "唱片架 — Record Shelf",
+      "scrollH": 720,
+      "screens": 1,
+      "sections": 3,
+      "sticky": 4,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 44,
+      "buttons": [
+        "hate that i made you love me",
+        "DINASTÍA",
+        "Tropicoqueta",
+        "I Said I Love You First",
+        "American Idiot (20th Anniversary Deluxe ",
+        "+–=÷× (Tour Collection)",
+        "ESQUINAS",
+        "Bewitched",
+        "Dawn FM"
+      ],
+      "h1": "hate that i made you love me"
+    },
+    "bottomShot": {
+      "y": 0,
+      "visible": 122
+    }
+  },
+  {
+    "slug": "outfit-today",
+    "url": "https://outfit-today-ruby.vercel.app",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "今天穿什麼 · Outfit Today",
+      "scrollH": 1348,
+      "screens": 1.9,
+      "sections": 6,
+      "sticky": 0,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 0,
+      "buttons": [
+        "今日穿搭",
+        "我的衣櫃",
+        "上課",
+        "出門",
+        "運動",
+        "就穿這套 ✓",
+        "就穿這套 ✓",
+        "就穿這套 ✓",
+        "換一批",
+        "+ 新增衣物",
+        "還原示範衣櫃",
+        "編輯"
+      ],
+      "h1": "今天穿什麼"
+    },
+    "bottomShot": {
+      "y": 628,
+      "visible": 18
+    }
+  },
+  {
+    "slug": "wardrobe",
+    "url": "https://wardrobe-gallery.vercel.app",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "我的衣櫃",
+      "scrollH": 720,
+      "screens": 1,
+      "sections": 2,
+      "sticky": 3,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 12,
+      "buttons": [
+        "衣櫃",
+        "搭配",
+        "穿這套"
+      ],
+      "h1": "我的衣櫃"
+    },
+    "bottomShot": {
+      "y": 0,
+      "visible": 31
+    }
+  },
+  {
+    "slug": "cpe49",
+    "url": "https://cpe49-trainer.vercel.app",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "CPE 必考一星 49 題：題目＋Python 解法詳解｜大學程式能力檢定",
+      "scrollH": 2322,
+      "screens": 3.2,
+      "sections": 9,
+      "sticky": 3,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 0,
+      "buttons": [
+        "CPE 一星 49 題 · 衝刺站",
+        "首頁",
+        "考試資訊",
+        "題庫 · 49 題",
+        "讀書方法",
+        "解題反射",
+        "Python 起手式",
+        "考前衝刺",
+        "UVa 解題本",
+        "備考模式",
+        "隨機抽一題",
+        "全部"
+      ],
+      "h1": "CPE 一星 49 題 — 上機特訓"
+    },
+    "bottomShot": {
+      "y": 1602,
+      "visible": 16
+    }
+  },
+  {
+    "slug": "five-layer-plan",
+    "url": "https://five-layer-plan.vercel.app",
+    "ok": true,
+    "status": 200,
+    "probe": {
+      "title": "五層規劃系統",
+      "scrollH": 1281,
+      "screens": 1.8,
+      "sections": 1,
+      "sticky": 1,
+      "canvas": 0,
+      "video": 0,
+      "imgs": 0,
+      "buttons": [
+        "第一層使用者檔案",
+        "第二層目標分層",
+        "第三層任務拆解",
+        "第四層週節奏",
+        "第五層檢討機制",
+        "完成總覽",
+        "複製提示詞",
+        "下一層 →"
+      ],
+      "h1": "五層規劃系統"
+    },
+    "bottomShot": {
+      "y": 561,
+      "visible": 10
+    }
+  },
+  {
+    "slug": "room",
+    "url": "https://room-pitch.vercel.app/index.html",
+    "ok": true
+  },
+  {
+    "slug": "oasis",
+    "url": "https://oasis-green.onrender.com/",
+    "ok": true
+  },
+  {
+    "slug": "policy-sandbox",
+    "url": "https://policy-sandbox-ashen.vercel.app",
+    "ok": true
+  },
+  {
+    "slug": "parking-exhibit",
+    "url": "https://parking-exhibit.vercel.app",
+    "ok": true,
+    "status": 200
+  }
+]
