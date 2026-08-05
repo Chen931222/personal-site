@@ -22,3 +22,5 @@ node_modules/
 # 錄影管線：自己帶 node_modules 與 Playwright 的暫存，而且產物已經在 public/media/。
 # 整包上傳等於把工具鏈推上公開網站。
 tools/
+
+.claude/

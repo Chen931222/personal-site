@@ -23,3 +23,6 @@ footage/
 Thumbs.db
 
 .vercel
+
+# Claude Code 的本機設定 —— 只是開發工具的偏好，跟網站無關，公開 repo 不放
+.claude/
