@@ -5,23 +5,17 @@
 
 ---
 
-## ⚠️ 唯一的下一步
+## ⚠️ 唯一的下一步：補上你的臉
 
-**把你的名字填進 [`src/data/site.ts`](src/data/site.ts)。**
+名字已經填好（`site.ts` 裡是「朱 / 亞承」，全站生效）。**現在只差影像。**
 
-現在開場動畫最後展開的是「你的 / 名字」四個字，首頁第三幕寫的是「我是 你的名字」。
-改這兩行，整站（開場、頁首、關於我、`<title>`、SEO）一起變。
+站上的**大頭照與生活照目前都是打樣佔位框**（`site.ts` 的 `portrait` 與 `about.photos` 仍是 `null`）——
+開場動畫交棒後的第一眼、關於我那面照片牆，現在都是空框。這是整站唯一沒收尾的一塊，也是只有你能補的：
 
-```ts
-name: {
-  zh:    { a: '你的', b: '名字' },      // ← 改這裡
-  latin: { a: 'YOUR', b: 'NAME' },      // ← 和這裡
-},
-```
+1. **大頭照**（首頁第一眼）→ 一張 4:5 直式正面照放到 `public/media/portrait.webp`，路徑填進 `site.ts` 的 `portrait`。
+2. **4–6 張生活照** → 放進 `public/media/`（`life-01.webp`、`life-02.webp`…），填進 `about.photos`。
 
-**第二步：丟一張大頭照。** 它是開場動畫交棒之後的第一眼 ——
-名字兩半分開留下的口，銀幕拉開，裡面就是它。
-放進 `public/media/`，把路徑填進 `site.ts` 的 `portrait`。
+檔名對就會自動出現，不用改其他程式（見下方「待補素材清單」）。**補了素材記得重啟 dev server**——`media.ts` 在載入時就掃完資料夾，之後新增的看不到。
 
 ---
 
@@ -53,7 +47,7 @@ sessionStorage.clear(); location.reload()
 
 | # | 要補什麼 | 放哪裡 | 改哪一行 | 規格 |
 |---|---|---|---|---|
-| 1 | **你的名字** | — | `src/data/site.ts` → `name` | — |
+| 1 | ~~你的名字~~ ✅ 已填（朱／亞承） | — | `src/data/site.ts` → `name` | — |
 | 2 | **大頭照** ← 首頁第一眼 | `public/media/portrait.webp` | `src/data/site.ts` → `portrait` | 4:5 直式，正面、乾淨 |
 | 3 | **4–6 張生活照** | `public/media/` | `src/data/site.ts` → `about.photos` | 直橫交錯，`ratio` 一起改 |
 | 4 | **學經歷** | — | `src/data/site.ts` → `about.path`（標 `todo: true` 的兩列） | 只寫真的；沒有就整列刪掉 |
