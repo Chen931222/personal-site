@@ -377,6 +377,11 @@ export function initStage() {
     if (next === pos || busy) return;
     busy = true;
 
+    // 交棒進場（enter）還在跑時滑一下：不先殺掉它，它的淡入會跟這裡的淡出搶同一個元素，
+    // 淡出 0.34s 先跑完，淡入繼續把舊簡介推回可見 —— 手機上兩張作品的文字疊在一起。
+    settleFlight();
+    hideAllExcept(cur());
+
     const from = cur();
     pos = next;
     const to = cur();
