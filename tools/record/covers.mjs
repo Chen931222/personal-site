@@ -91,8 +91,12 @@ const SITES = [
   {
     slug: 'parking-exhibit',
     url: 'https://parking-exhibit.vercel.app',
-    // 標題幕縮成縮圖只剩大字 —— 瞬跳過導覽，抓滿場車的操作台狀態
+    // 標題幕縮成縮圖只剩大字 —— 跳過開場與導覽，抓滿場車的操作台狀態。
+    // ⚠️ 2026-08-06 改版後多一層電影式開場：intro-skip 要先按，
+    //    只按 btn-skip0 的話拍到的是開場的佇列章節，不是操作台。
     async prep(page) {
+      await page.evaluate(() => document.getElementById('intro-skip')?.click());
+      await sleep(900);
       await page.evaluate(() => document.getElementById('btn-skip0').click());
       await sleep(5000);
     },
@@ -108,7 +112,7 @@ const SITES = [
   },
   {
     slug: 'room',
-    url: 'https://room-pitch.vercel.app/index.html',
+    url: 'https://room-sepia.vercel.app',
     // 16.6 屏的滾動敘事，首屏是「房間 · 個人索引」的標題卡 —— 縮圖用首屏就對了
     async prep(page) {
       await page.evaluate(() => window.scrollTo(0, 0));

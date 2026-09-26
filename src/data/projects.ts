@@ -189,7 +189,9 @@ export const PROJECTS: Project[] = [
     short: '房間',
     desc: '每一件物件通向一個正在進行的計畫。滾動就是鏡頭在房間裡走一遍。',
     status: 'live',
-    href: 'https://room-pitch.vercel.app/index.html',
+    // 2026-08-02 換網址：room-pitch 的部署被刪了（進站變 Vercel 404），
+    // room-sepia 是同一個站還活著的那份。內容一致，錄影與縮圖不用重錄。
+    href: 'https://room-sepia.vercel.app',
     year: 2026,
     tags: ['入口', '影像', '滾動敘事'],
     cover: null,
@@ -197,22 +199,9 @@ export const PROJECTS: Project[] = [
     video: null,
     cat: '展示',
   },
-  {
-    slug: 'langalpha',
-    name: 'LangAlpha',
-    latin: 'LANGALPHA',
-    kind: '進行中',
-    short: 'LangAlpha',
-    desc: '用語言模型讀市場、給出可以被記分的預測。跑在自己的雲端機器上。',
-    status: 'wip',
-    href: null,
-    year: 2026,
-    tags: ['LLM', '市場', '可記分'],
-    cover: null,
-    still: null,
-    video: null,
-    cat: '分析',
-  },
+  // LangAlpha 2026-08-06 撤下（站主指示：底子是別人的，不列為作品）——
+  // 跟書櫃、唱片架同一條收錄判準：這件裡面有沒有一個自己解掉的問題。
+  // 它本來就沒上線（href: null）、沒有任何素材，撤掉不留孤兒檔案。
   // 第二大腦（second-brain）2026-07-29 移出作品清單：它不是一件作品，是做出所有作品的
   // 方法，而且點不進去（不公開）。現在它有自己的一頁 /method，講的比一格輪播多得多。
 ];

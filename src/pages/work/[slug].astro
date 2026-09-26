@@ -1,0 +1,819 @@
+---
+/**
+ * 作品內頁 · 拆解 —— 同一批作品的第三種看法。
+ *
+ *   /work        輪播   一件一件看
+ *   /work/list   列表   一次看完
+ *   /work/<slug> 拆解   看深            ← 這裡
+ *
+ * 不做成 /journal 或 /notes 之類的平行分頁：那會變成第二個作品入口，
+ * 而這個站的規矩是同一件事只能有一個入口（見 DESIGN.md「沒有獨立的 /about」）。
+ *
+ * 只有 STUDIES 裡登記過的作品才生內頁 —— 每件都配一篇等於八篇薄文。
+ *
+ * 這一頁刻意**不用**步進敘事。全站的預設互動語言是「滾一下換一幕」，
+ * 但這是唯一一頁是要「讀」的；步進會讓人讀不完。動態只有一種：
+ * 沿用既有的 [data-rise] 小位移淡入。
+ */
+import Base from '../../layouts/Base.astro';
+import { STUDIES } from '../../data/studies';
+import { PROJECTS } from '../../data/projects';
+
+export function getStaticPaths() {
+  return Object.keys(STUDIES).map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const study = STUDIES[slug!];
+const project = PROJECTS.find((p) => p.slug === study.project);
+---
+
+<Base
+  title={`拆解 · ${project?.name ?? study.title}`}
+  description={study.lede}
+>
+  <article class="study">
+    <!-- ── 片頭卡 ───────────────────────────────────────────────── -->
+    <header class="wrap sec head" data-rise>
+      <div class="head__top">
+        <p class="mono">[ STUDY — {study.index} ]</p>
+        <p class="mono head__view">
+          <a class="lnk" href="/work">輪播</a>
+          <span aria-hidden="true">/</span>
+          <a class="lnk" href="/work/list">列表</a>
+          <span aria-hidden="true">/</span>
+          <span class="is-on" aria-current="page">拆解</span>
+        </p>
+      </div>
+
+      <h1 class="t-title head__h">{study.title}</h1>
+      <p class="t-lede head__lede">{study.lede}</p>
+
+      <dl class="spec">
+        {
+          study.spec.map((s) => (
+            <div class="spec__i">
+              <dt class="mono">{s.label}</dt>
+              <dd class="mono mono--bright spec__v">{s.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <p class="head__go">
+        <a class="btn" href={study.live.href} rel="noopener">
+          <span class="dot dot--live" aria-hidden="true"></span>
+          {study.live.label}
+          <span aria-hidden="true">→</span>
+        </a>
+      </p>
+    </header>
+
+    <!-- ── 八幕 ─────────────────────────────────────────────────── -->
+    {
+      study.scenes.map((scene) => (
+        <section class="wrap sec scene" data-rise aria-labelledby={`s-${scene.num}`}>
+          {/* 左欄是編號與拉丁副標，右欄是內容。桌面上左欄黏著，
+              讀長段落時還看得到自己在第幾幕。 */}
+          <div class="scene__rail">
+            <p class="mono mono--bright scene__num">{scene.num}</p>
+            <p class="mono scene__latin">{scene.latin}</p>
+          </div>
+
+          <div class="scene__body">
+            <h2 class="scene__h" id={`s-${scene.num}`}>{scene.title}</h2>
+
+            {scene.blocks.map((block) => (
+              <>
+                {block.kind === 'text' &&
+                  block.body.map((p) => <p class="t-body para">{p}</p>)}
+
+                {block.kind === 'table' && (
+                  <figure class="fig">
+                    {/* 寬表在窄螢幕自己捲，頁面本體永遠不橫捲。
+                        tabindex 讓鍵盤也能捲得動這個區域。 */}
+                    <div class="tbl-scroll" tabindex="0" role="group" aria-label="數據表">
+                      <table class="tbl">
+                        <thead>
+                          <tr>
+                            {block.table.head.map((h) => (
+                              <th class="mono" scope="col">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {block.table.rows.map((row, ri) => (
+                            <tr class={block.table.strong?.includes(ri) ? 'is-key' : undefined}>
+                              {row.map((cell, ci) =>
+                                ci === 0 ? (
+                                  <th class="tbl__k" scope="row">{cell}</th>
+                                ) : (
+                                  <td class="tbl__v">{cell}</td>
+                                )
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* 誠實條款：每一張表都要指得回一個實際跑過的檔案。
+                        text-transform 必須是 none —— 路徑與檔名是小寫的，
+                        被全域 .mono 轉成大寫就從「真的紀錄」變成「畫出來的紀錄」。 */}
+                    <figcaption class="mono mono-sm src">
+                      <span class="src__k">出處</span>
+                      <span class="src__v">{block.table.source}</span>
+                    </figcaption>
+                  </figure>
+                )}
+
+                {block.kind === 'reckons' && (
+                  <div class="reckons">
+                    {block.items.map((r, i) => (
+                      <div class="rk">
+                        <p class="mono rk__n">{String(i + 1).padStart(2, '0')}</p>
+                        <div class="rk__rows">
+                          <div class="rk__row">
+                            <p class="mono rk__k">我原本以為</p>
+                            <p class="rk__t rk__t--was">{r.thought}</p>
+                          </div>
+                          <div class="rk__row">
+                            <p class="mono mono--bright rk__k">實測是</p>
+                            <p class="rk__t rk__t--is">{r.actual}</p>
+                          </div>
+                          <div class="rk__row">
+                            <p class="mono rk__k">後果</p>
+                            <p class="rk__t">{r.result}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {block.kind === 'chain' && (
+                  <div class="chain">
+                    <ol class="chain__l">
+                      {block.steps.map((s, i) => (
+                        <li class={`chain__i${i === block.steps.length - 1 ? ' is-end' : ''}`}>
+                          <span class="mono chain__k">{s.label}</span>
+                          <span class="chain__v">{s.value}</span>
+                        </li>
+                      ))}
+                    </ol>
+                    <p class="mono mono-sm chain__note">{block.note}</p>
+                  </div>
+                )}
+
+                {block.kind === 'embed' && (
+                  <figure class="fig emb" data-embed data-src={block.src} data-title={block.title}>
+                    {/* 點了才載：6 MB ＋ WebGL 自動跑起來，會在一篇文字頁裡
+                        當場吃掉手機。按鈕上老實寫出下載量，讓人自己決定。 */}
+                    <div class="emb__box">
+                      <div class="emb__slot" data-embed-slot></div>
+                      <button class="emb__cta" type="button" data-embed-go>
+                        <span class="mono emb__cta-k">[ 3D ]</span>
+                        <span class="emb__cta-t">載入可互動的掃描</span>
+                        <span class="mono emb__cta-w">{block.weight}</span>
+                      </button>
+                    </div>
+                    <figcaption class="emb__cap">
+                      <span class="t-body emb__cap-t">{block.caption}</span>
+                      <span class="emb__cap-r">
+                        {/* 收起＝真的把 iframe 從 DOM 拿掉，讓那個 WebGL context
+                            連同 GPU 記憶體一起被回收。不是只把它藏起來。 */}
+                        <button class="mono emb__cap-a emb__close" type="button" data-embed-close>
+                          收起 ✕
+                        </button>
+                        <a class="mono lnk emb__cap-a" href={block.full} rel="noopener">
+                          另開整頁檢視器 ↗
+                        </a>
+                      </span>
+                    </figcaption>
+                  </figure>
+                )}
+
+                {block.kind === 'list' && (
+                  <dl class="open">
+                    {block.items.map((it) => (
+                      <div class="open__i">
+                        <dt class="open__k">{it.term}</dt>
+                        <dd class="t-body open__v">{it.body}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    <!-- ── 英文摘要 ─────────────────────────────────────────────
+         這一頁的第二個讀者是不讀中文的人。全篇翻譯太重，
+         而表格本來就跨語言（數字＋COLMAP／SOG 都是英文），
+         真正需要翻的只有敘事骨幹 —— 所以只放摘要。 -->
+    <section class="wrap sec abs" data-rise aria-labelledby="abs-h">
+      <div class="scene__rail">
+        <p class="mono mono--bright scene__num">EN</p>
+        <p class="mono scene__latin">ABSTRACT</p>
+      </div>
+      <div class="scene__body">
+        <h2 class="scene__h abs__h" id="abs-h">In English</h2>
+        {study.abstract.map((p) => <p class="t-body para abs__p">{p}</p>)}
+      </div>
+    </section>
+
+    <!-- ── 出口 ─────────────────────────────────────────────────── -->
+    <nav class="wrap sec exit" data-rise aria-label="接下來">
+      <a class="exit__i" href="/work/list">
+        <span class="mono">[ 回去 ]</span>
+        <span class="exit__t">全部作品</span>
+      </a>
+      {
+        project?.href && (
+          <a class="exit__i exit__i--go" href={project.href} rel="noopener">
+            <span class="mono">[ 進站 ]</span>
+            <span class="exit__t">{project.name}</span>
+          </a>
+        )
+      }
+    </nav>
+  </article>
+</Base>
+
+<script>
+  /**
+   * 可互動成品：點了才載。
+   *
+   * 為什麼不預先載：6 MB ＋ 一個 WebGL context，自動跑起來會在一篇要「讀」的
+   * 文字頁裡當場吃掉手機的頻寬與 GPU。訪客來這一頁的目的是讀，看 3D 是加選。
+   *
+   * 用事件委派掛在 document 上：Astro 的 ClientRouter 換頁會抽換整棵 DOM，
+   * 掛在元素上的監聽器每次都要重掛，掛在 document 上只要一次。
+   */
+  const load = (fig: HTMLElement) => {
+    const slot = fig.querySelector<HTMLElement>('[data-embed-slot]');
+    const src = fig.dataset.src;
+    if (!slot || !src || fig.hasAttribute('data-on')) return;
+
+    const frame = document.createElement('iframe');
+    frame.src = src;
+    frame.title = fig.dataset.title ?? '3D 檢視器';
+    // 這是自己的另一個網域上的頁面，但仍然只給它需要的權限。
+    frame.setAttribute('allow', 'fullscreen');
+    frame.setAttribute('loading', 'lazy');
+    slot.appendChild(frame);
+    fig.setAttribute('data-on', '');
+    fig.querySelector<HTMLElement>('[data-embed-close]')?.focus();
+  };
+
+  /** 收起＝把 iframe 從 DOM 移除。藏起來的話 WebGL context 還活著。 */
+  const unload = (fig: HTMLElement) => {
+    const slot = fig.querySelector<HTMLElement>('[data-embed-slot]');
+    if (slot) slot.textContent = '';
+    fig.removeAttribute('data-on');
+    fig.querySelector<HTMLElement>('[data-embed-go]')?.focus();
+  };
+
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+
+    const go = t.closest<HTMLElement>('[data-embed-go]');
+    if (go) {
+      const fig = go.closest<HTMLElement>('[data-embed]');
+      if (fig) load(fig);
+      return;
+    }
+
+    const close = t.closest<HTMLElement>('[data-embed-close]');
+    if (close) {
+      const fig = close.closest<HTMLElement>('[data-embed]');
+      if (fig) unload(fig);
+    }
+  });
+
+  // 換頁時 DOM 會整棵被抽掉，但明確拆掉比較保險 ——
+  // 舊文件在被丟棄前若還持有 iframe，那個 WebGL context 的釋放時機就交給 GC 了。
+  document.addEventListener('astro:before-swap', () => {
+    document
+      .querySelectorAll<HTMLElement>('[data-embed][data-on]')
+      .forEach((fig) => unload(fig));
+  });
+</script>
+
+<style>
+  /* ── 節奏 ──────────────────────────────────────────────────────
+     DESIGN.md：標題上方的空間永遠大於下方；密的段落之後要有空的段落。
+     這裡的節拍是 --s7（84px），表格與卡片密集的幕之後靠它換氣。 */
+  .sec {
+    padding-block: var(--s7);
+  }
+
+  /* ── 片頭卡 ──────────────────────────────────────────────────── */
+  .head {
+    padding-top: var(--s6);
+    padding-bottom: var(--s8);
+  }
+
+  .head__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s4);
+    padding-bottom: var(--s4);
+    border-bottom: 1px solid var(--paper-18);
+  }
+
+  .head__view {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+  }
+
+  /* 11px 的 mono 只有 15px 高，達不到 WCAG 2.5.8 的 24×24。
+     用 padding 把可點區域撐開，底線往回拉，視覺不變。 */
+  .head__view .lnk {
+    padding-block: 5px 6px;
+  }
+
+  .head__view .lnk::after {
+    bottom: 4px;
+  }
+
+  .head__view .is-on {
+    color: var(--paper);
+  }
+
+  .head__h {
+    margin-top: var(--s7);
+    max-width: 18ch;
+  }
+
+  .head__lede {
+    margin-top: var(--s5);
+    color: var(--paper-64);
+  }
+
+  /* 規格讀數：換行時整組一起掉，不會出現「三組在上、一組孤零零在下」。
+
+     用 flex-wrap 不用 grid：`repeat(auto-fit, minmax(0, max-content))` 會產生
+     一排等寬軌道（實測 375px 下是 7 條 44.8px），把「2026.08.18 — 08.20」
+     擠成斷行的碎字。flex 的項目照內容寬度排，寬度不夠就整組換行。 */
+  .spec {
+    margin-top: var(--s6);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s4) var(--s6);
+  }
+
+  .spec__v {
+    margin-top: var(--s2);
+    text-transform: none; /* 日期與 MB 是小寫／混排，不該被 .mono 轉大寫 */
+  }
+
+  .head__go {
+    margin-top: var(--s6);
+  }
+
+  /* ── 一幕 ────────────────────────────────────────────────────── */
+  .scene {
+    display: grid;
+    gap: var(--s5);
+    border-top: 1px solid var(--paper-18);
+  }
+
+  .scene__rail {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s3);
+  }
+
+  .scene__latin {
+    text-transform: uppercase;
+  }
+
+  /* grid 子項的自動最小尺寸是 min-content，不是 0 ——
+     沒有這一條，裡面那張 nowrap 的表會把整欄撐開，
+     overflow-x:auto 的捲動容器就永遠不會啟動，改成整頁橫捲。 */
+  .scene__body {
+    min-width: 0;
+  }
+
+  .scene__h {
+    font-family: var(--font-display);
+    font-weight: 200;
+    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin-bottom: var(--s5);
+  }
+
+  .para + .para {
+    margin-top: var(--s4);
+  }
+
+  .scene__body > * + .fig,
+  .scene__body > * + .reckons,
+  .scene__body > * + .chain,
+  .scene__body > * + .open {
+    margin-top: var(--s6);
+  }
+
+  .fig + .para,
+  .chain + .para {
+    margin-top: var(--s6);
+  }
+
+  /* ── 表 ──────────────────────────────────────────────────────── */
+  .fig {
+    margin: 0;
+  }
+
+  /* 寬表自己捲，頁面本體不橫捲 */
+  .tbl-scroll {
+    overflow-x: auto;
+    border-top: 1px solid var(--paper-18);
+  }
+
+  .tbl-scroll:focus-visible {
+    outline: 1px solid var(--paper-38);
+    outline-offset: 3px;
+  }
+
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tbl th,
+  .tbl td {
+    text-align: left;
+    padding: var(--s3) var(--s5) var(--s3) 0;
+    border-bottom: 1px solid var(--paper-08);
+    white-space: nowrap;
+    vertical-align: baseline;
+  }
+
+  .tbl thead th {
+    padding-top: var(--s3);
+    padding-bottom: var(--s3);
+    border-bottom: 1px solid var(--paper-18);
+    font-weight: 400;
+  }
+
+  .tbl__k {
+    font-weight: 400;
+    color: var(--paper-64);
+    font-size: clamp(0.9rem, 1vw, 0.98rem);
+  }
+
+  .tbl__v {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--paper-64);
+  }
+
+  /* 加重靠亮度，不靠顏色 —— 紅色在這個站只給狀態，不給裝飾 */
+  .tbl tr.is-key .tbl__k,
+  .tbl tr.is-key .tbl__v {
+    color: var(--paper);
+  }
+
+  .tbl tr.is-key .tbl__v {
+    font-weight: 500;
+  }
+
+  /* 出處：路徑是小寫的，不能被 .mono 轉大寫 */
+  .src {
+    display: flex;
+    gap: var(--s3);
+    margin-top: var(--s3);
+    text-transform: none;
+    color: var(--paper-38);
+  }
+
+  .src__k {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    flex: none;
+  }
+
+  .src__k::before {
+    content: '[ ';
+  }
+
+  .src__k::after {
+    content: ' ]';
+  }
+
+  .src__v {
+    line-height: 1.6;
+  }
+
+  /* ── 我原本以為 / 實測是 / 後果 ──────────────────────────────── */
+  .reckons {
+    display: grid;
+    gap: var(--s5);
+  }
+
+  .rk {
+    display: grid;
+    gap: var(--s3);
+    padding-top: var(--s4);
+    border-top: 1px solid var(--paper-18);
+  }
+
+  .rk__rows {
+    display: grid;
+    gap: var(--s4);
+  }
+
+  .rk__k {
+    flex: none;
+  }
+
+  .rk__t {
+    font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+    line-height: 1.72;
+    color: var(--paper-64);
+    max-width: 60ch;
+    margin-top: var(--s2);
+  }
+
+  /* 「我原本以為」壓暗、「實測是」提亮：這一組卡片的重點是那個轉折 */
+  .rk__t--was {
+    color: var(--paper-38);
+  }
+
+  .rk__t--is {
+    color: var(--paper);
+  }
+
+  /* ── 壓縮鏈 ──────────────────────────────────────────────────── */
+  .chain__l {
+    list-style: none;
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--paper-18);
+  }
+
+  .chain__i {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s4);
+    padding: var(--s3) 0;
+    border-bottom: 1px solid var(--paper-08);
+  }
+
+  .chain__k {
+    color: var(--paper-38);
+  }
+
+  .chain__v {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    color: var(--paper-64);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chain__i.is-end .chain__k {
+    color: var(--paper-64);
+  }
+
+  .chain__i.is-end .chain__v {
+    font-size: clamp(1.4rem, 3vw, 2.1rem);
+    font-family: var(--font-display);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    color: var(--paper);
+  }
+
+  .chain__note {
+    margin-top: var(--s3);
+    text-transform: none;
+    color: var(--paper-38);
+    line-height: 1.6;
+  }
+
+  /* ── 可互動的成品 ────────────────────────────────────────────── */
+  .emb__box {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border: 1px solid var(--paper-18);
+    background: var(--ink-lift);
+    overflow: hidden;
+  }
+
+  .emb__slot {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* iframe 由 JS 塞進來，樣式先寫好 */
+  .emb__slot :global(iframe) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .emb__cta {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    display: grid;
+    place-content: center;
+    gap: var(--s3);
+    justify-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--paper-64);
+    cursor: pointer;
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .emb__cta:hover,
+  .emb__cta:focus-visible {
+    color: var(--paper);
+  }
+
+  .emb__cta-t {
+    font-family: var(--font-display);
+    font-weight: 200;
+    font-size: clamp(1.3rem, 2.6vw, 1.9rem);
+    letter-spacing: -0.02em;
+  }
+
+  .emb__cta-w {
+    color: var(--paper-38);
+  }
+
+  .emb__cap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s3) var(--s5);
+    margin-top: var(--s3);
+  }
+
+  .emb__cap-t {
+    max-width: 52ch;
+  }
+
+  .emb__cap-r {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s4);
+    flex: none;
+  }
+
+  .emb__cap-a {
+    color: var(--paper-38);
+    flex: none;
+    padding-block: 5px 6px;
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  /* 按鈕預設不存在 —— 沒載入就沒有東西可收 */
+  .emb__close {
+    display: none;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  [data-embed][data-on] .emb__close {
+    display: inline-block;
+  }
+
+  [data-embed][data-on] .emb__cta {
+    display: none;
+  }
+
+  .emb__cap-a::after {
+    bottom: 4px;
+  }
+
+  .emb__cap-a:hover,
+  .emb__cap-a:focus-visible {
+    color: var(--paper-64);
+  }
+
+  /* ── 還沒解的 ────────────────────────────────────────────────── */
+  .open {
+    display: grid;
+    gap: var(--s5);
+  }
+
+  .open__i {
+    padding-top: var(--s4);
+    border-top: 1px solid var(--paper-18);
+  }
+
+  .open__k {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+    color: var(--paper);
+  }
+
+  .open__v {
+    margin-top: var(--s3);
+  }
+
+  /* ── 英文摘要 ────────────────────────────────────────────────── */
+  .abs {
+    display: grid;
+    gap: var(--s5);
+    border-top: 1px solid var(--paper-18);
+  }
+
+  .abs__h {
+    font-style: italic;
+  }
+
+  .abs__p {
+    max-width: 66ch;
+  }
+
+  /* ── 出口 ────────────────────────────────────────────────────── */
+  .exit {
+    display: grid;
+    gap: var(--s5);
+    border-top: 1px solid var(--paper-18);
+    padding-bottom: var(--s7);
+  }
+
+  .exit__i {
+    display: grid;
+    gap: var(--s2);
+  }
+
+  .exit__t {
+    font-family: var(--font-display);
+    font-weight: 200;
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+    letter-spacing: -0.025em;
+    color: var(--paper-64);
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .exit__i:hover .exit__t,
+  .exit__i:focus-visible .exit__t {
+    color: var(--paper);
+  }
+
+  /* ── 桌面：左欄編號、右欄內容 ────────────────────────────────── */
+  @media (min-width: 900px) {
+    .scene,
+    .abs,
+    .exit {
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: var(--s6);
+    }
+
+    .scene__rail {
+      display: block;
+      position: sticky;
+      top: 128px;
+      align-self: start;
+    }
+
+    .scene__latin {
+      margin-top: var(--s2);
+    }
+
+    .exit {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .exit__i--go {
+      text-align: right;
+      justify-items: end;
+    }
+  }
+
+  /* ── 375px ──────────────────────────────────────────────────── */
+  @media (max-width: 560px) {
+    .head__top {
+      flex-direction: column;
+      gap: var(--s3);
+    }
+
+    .tbl th,
+    .tbl td {
+      padding-right: var(--s4);
+    }
+  }
+</style>

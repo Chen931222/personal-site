@@ -394,6 +394,47 @@ ol {
   will-change: transform;
 }
 
+/* --- 進場 ---------------------------------------------------------------
+   全站只有一種：小位移淡入（18px / 720ms / stagger 靠 --d）。
+   IntersectionObserver 加 .is-in（見 lib/about.ts），動畫交給 CSS。
+
+   放在全域是因為 [data-rise] 現在不只首頁在用（作品拆解頁也用）。
+   About.astro 裡還留著一份 scoped 的同名規則 —— 它的選擇器多一個 scope class，
+   權重較高但宣告完全相同，所以行為一致。下次改到那個檔時可以把它刪掉。
+
+   隱藏狀態只在 html[data-js] 下生效：沒有 JS 的瀏覽器看到的是最終狀態，
+   不是一片空白。「內容看不見」比「動畫沒播」嚴重一個量級。
+   ---------------------------------------------------------------------- */
+
+html[data-js] [data-rise] {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+html[data-js] [data-rise].is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 720ms var(--ease-out) var(--d, 0ms),
+    transform 720ms var(--ease-out) var(--d, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-js] [data-rise] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 列印沒有捲動，IntersectionObserver 永遠不會替下半頁解鎖 ——
+   不解掉這一條，印出來的會是一張只有標題的紙。 */
+@media print {
+  html[data-js] [data-rise] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* --- 減少動態 -----------------------------------------------------------
    不是加速，是直接呈現最終狀態。
    ---------------------------------------------------------------------- */

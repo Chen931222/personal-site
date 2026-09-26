@@ -43,6 +43,7 @@ const path = Astro.url.pathname;
     <!-- 沒有這一行，瀏覽器會自己去要 /favicon.ico，拿到 404 —— 每個來源的第一次載入
          都會在 console 留一筆錯誤，看起來像偶發的載入失敗，其實只是沒放圖示。 -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />

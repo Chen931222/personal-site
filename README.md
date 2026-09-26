@@ -400,6 +400,42 @@ Esc 或右上角的「關閉」收起來。開啟時選單以外的區塊會被�
 
 **https://personal-site-tan-alpha.vercel.app** （正式版）
 
+## 這台機器的 build 特例
+
+Smart App Control 從 2026-08-05 起擋掉 Astro compiler 的原生 `.node` 檔（SAC 沒有
+白名單，不關就繞不開）。解法已裝好：WASM 後備 binding ＋ 專案層 `.npmrc` 的
+`force=true`（讓 npm 放行 cpu=wasm32 的套件）。**兩個檔案都不要刪** ——
+細節見 [.npmrc](.npmrc) 裡的註解。症狀長這樣就是它：
+`Cannot find native binding … An Application Control policy has blocked this file`。
+
+## 第二大腦：數字怎麼保持誠實
+
+`/method` 頁上的每個數字（102 篇筆記、各資料夾篇數）都是 `G:\Vault` 的**實掃結果**，
+不是手寫的。掃描器在 [`tools/scan-vault.mjs`](tools/scan-vault.mjs)，產物是
+[`src/data/brain.json`](src/data/brain.json)，`BrainGraph.astro` 與 `method.astro` 都讀它。
+
+**改完筆記，要讓網站跟上：**
+
+```bash
+cd G:\Projects\personal-site && npm run sync
+```
+
+然後照常 `npm run build` + `vercel --prod`。
+
+**為什麼是獨立的一步、不塞進 `build`：** 跟 `media.ts` 只能掃 repo 內的 `public/media`
+同一個道理 —— `G:\Vault` 不在 repo 裡，Vercel 的雲端 build 機器看不到它。在 build 時讀它，
+本機對、雲端直接爆。所以 sync 在**本機**跑、把數字快照進 `brain.json`（進 repo），
+build 只讀那份快照。沒跑 sync 也不會壞，只是數字停在上次 sync 的日期。
+
+**手排的部分不會被蓋掉：** 圖上「畫哪幾個點、點放哪裡」是策展，寫在 `BrainGraph.astro` 的
+`NODES`（座標有語意：左＝輸入、右＝產出、下＝手藝）。sync 只更新資料夾後面的**篇數**，
+不會把新筆記自動灑成亂點 —— 新筆記值不值得畫進圖，由人決定。這是刻意的：全自動 force-layout
+會變成一張沒有語意的亂點圖。輸入管線數（6）是概念數不是檔案數，掃不出來，寫死在
+`src/data/brain.ts` 的 `PIPELINES`。
+
+真正的「即時同步到線上」做不到也不該做：網站在雲端、給全世界看，不可能即時讀你本機硬碟。
+`npm run sync` 就是誠實可達的最好版本 —— 一個指令，數字對齊當下的 vault。
+
 ## 部署（Vercel）
 
 靜態輸出，不需要 adapter。
@@ -426,7 +462,7 @@ cd G:\Projects\personal-site && vercel --prod
 - [x] 裝飾性無限捲動由使用者滾動驅動，不自動跑（避開 WCAG 2.2 SC 2.2.2）
 - [x] `prefers-reduced-motion` 有完整靜態替代
 - [x] 頁面轉場即使動畫被凍結也不會卡住（rAF 逾時保險）
-- [x] 站上寫的數字跟線上實際對得起來（`tools/record/counts.mjs` 會逐站數）
+- [x] 站上寫的數字跟線上實際對得起來（作品數：`tools/record/counts.mjs` 逐站數；/method 的第二大腦篇數：`npm run sync` 重掃 vault）
 - [ ] **動畫手感實際看過** ← 這一項只有你能簽
 - [ ] **9 支操作影片實際看過** ← 同上。畫格我逐張驗過，但「順不順」要你看
 

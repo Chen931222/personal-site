@@ -9,6 +9,7 @@ import Base from '../../layouts/Base.astro';
 import Placeholder from '../../components/Placeholder.astro';
 import { STATS } from '../../data/projects';
 import { WORKS as PROJECTS } from '../../data/media';
+import { hasStudy } from '../../data/studies';
 
 const live = PROJECTS.filter((p) => p.status === 'live');
 const rest = PROJECTS.filter((p) => p.status !== 'live');
@@ -92,6 +93,20 @@ let n = 0;
                     </span>
                   </span>
                 </Tag>
+
+                {/* 拆解入口必須是 .row__in 的**兄弟**，不能放進去 ——
+                    整列本身就是一個 <a>，錨點不能巢狀（HTML 無效，
+                    而且鍵盤與輔助技術會拿到一個沒有名字的連結）。
+
+                    直接切齊版心左緣，不補佔位：實測 .row__body 在兩種版面
+                    （桌面 hover 的三欄、899px 以下的單欄）都是從列的左緣起算。 */}
+                {hasStudy(p.slug) && (
+                  <p class="row__study">
+                    <a class="mono lnk row__study-a" href={`/work/${p.slug}`}>
+                      拆解 —— 這件是怎麼做出來的 →
+                    </a>
+                  </p>
+                )}
               </li>
             );
           })}
@@ -185,6 +200,31 @@ let n = 0;
     padding-top: 0.7em;
     color: var(--paper-38);
     transition: color var(--t-base) var(--ease-out);
+  }
+
+  /* --- 拆解入口 --------------------------------------------------------
+     整列已經是一個連結，這一條只能當兄弟放在外面（錨點不能巢狀）。
+     ------------------------------------------------------------------ */
+
+  .row__study {
+    padding-bottom: var(--s4);
+  }
+
+  /* 11px 的 mono 只有 15px 高，達不到 WCAG 2.5.8 的 24×24 最小目標尺寸。
+     用 padding 把可點區域撐到 26px，再把底線往回拉，視覺跟原本一樣。 */
+  .row__study-a {
+    color: var(--paper-64);
+    padding-block: 5px 6px;
+    transition: color var(--t-base) var(--ease-out);
+  }
+
+  .row__study-a::after {
+    bottom: 4px;
+  }
+
+  .row__study-a:hover,
+  .row__study-a:focus-visible {
+    color: var(--paper);
   }
 
   .row__body {
@@ -283,6 +323,7 @@ let n = 0;
     .rows:hover .row:not(:hover) .row__in {
       opacity: 0.42;
     }
+
   }
 
   @media (max-width: 899px) {

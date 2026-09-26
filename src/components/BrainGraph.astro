@@ -1,0 +1,242 @@
+---
+/**
+ * 第二大腦的連結圖 —— /method 的主視覺。
+ *
+ * 這個文類（digital garden / Obsidian publish / Quartz）的正字標記就是這張圖：
+ * 點是筆記、線是連結。訪客一眼讀成「第二大腦」，不用唸完五段文字。
+ *
+ * ── 誠實條款 ────────────────────────────────────────────────────────
+ * 圖上每一個節點都是 G:\Vault 裡**真實存在**的檔案或資料夾（2026-07-30 實掃），
+ * 每一條線都是真的關係：資料夾→檔案是目錄結構；「網站開發」往下連到
+ * 視覺規格配方／電影式步進展示／Vibe coding 原則／Vercel 部署那四條，
+ * 是那篇筆記自己的「關聯」欄寫的 [[連結]]。不畫不存在的線 —— 這站不捏造。
+ *
+ * 位置是手排的（build 時定死，不跑 force layout）：
+ * 左＝輸入與 context、右＝產出的專案、下＝手藝筆記。排版有語意，不是隨機灑點。
+ *
+ * 無障礙：整張圖 aria-hidden。等價內容是旁邊那份 mono 檔案樹（窄螢幕直接顯示，
+ * 寬螢幕收成 sr-only）—— 同一份真相的兩種畫法。
+ *
+ * ── 數字哪來的 ──────────────────────────────────────────────────────
+ * 資料夾後面的篇數（count）不是手寫的，來自 BRAIN.folders —— tools/scan-vault.mjs
+ * 實掃 vault 產生。位置與「畫哪幾個點」還是手排策展：新筆記不會自動變成亂點，
+ * 由人決定值不值得畫進去。改完筆記跑 `npm run sync`，數字自己對齊。
+ */
+import { BRAIN } from '../data/brain';
+
+interface Node {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  kind: 'root' | 'folder' | 'note' | 'hot';
+  /** 資料夾的篇數，畫在標籤後面 */
+  count?: number;
+  /** 標籤錨點：預設 middle、s = 節點左側往右排、e = 節點右側往左排 */
+  anchor?: 's' | 'e';
+  /** 標籤放在節點上方（預設下方） */
+  above?: boolean;
+}
+
+const NODES: Node[] = [
+  { id: 'map', label: 'CLAUDE.md 總地圖', x: 448, y: 312, kind: 'root' },
+
+  // 資料夾（篇數來自 BRAIN.folders —— 實掃，不手寫）
+  { id: 'ctx', label: 'Context', x: 292, y: 208, kind: 'folder', count: BRAIN.folders.context },
+  { id: 'prj', label: 'Projects', x: 648, y: 206, kind: 'folder', count: BRAIN.folders.projects },
+  { id: 'top', label: 'Topics', x: 352, y: 462, kind: 'folder', count: BRAIN.folders.topics },
+  { id: 'jnl', label: 'Journal', x: 636, y: 446, kind: 'folder', count: BRAIN.folders.journal },
+  { id: 'clp', label: 'Clippings', x: 788, y: 340, kind: 'folder', count: BRAIN.folders.clippings, anchor: 'e' },
+  { id: 'rdg', label: 'Reading', x: 128, y: 332, kind: 'folder', count: BRAIN.folders.reading, anchor: 's' },
+  { id: 'inb', label: 'Inbox', x: 500, y: 96, kind: 'folder', count: BRAIN.folders.inbox, above: true },
+
+  // Context 的七份全畫（_INDEX 不畫，它是導航不是內容）。Blender 是後來多的那篇。
+  { id: 'web', label: '網站開發', x: 210, y: 296, kind: 'hot', anchor: 'e' },
+  { id: 'me', label: '關於我', x: 168, y: 142, kind: 'note', above: true },
+  { id: 'ai', label: 'AI 工具與代理', x: 330, y: 120, kind: 'note', above: true },
+  { id: 'stk', label: '股票預測', x: 108, y: 264, kind: 'note', anchor: 'e' },
+  { id: 'spt', label: '運動分析', x: 250, y: 84, kind: 'note', above: true },
+  { id: 'cry', label: '加密貨幣', x: 84, y: 190, kind: 'note', anchor: 'e' },
+  { id: 'bld', label: 'Blender', x: 372, y: 262, kind: 'note', anchor: 's' },
+
+  // Projects 的代表（36 篇挑 4 篇，都是 vault 裡真實存在、且站上有作品的源頭筆記）
+  { id: 'esp', label: 'Mi Español', x: 742, y: 132, kind: 'note', above: true },
+  { id: 'car', label: '夢想車庫', x: 812, y: 232, kind: 'note', anchor: 'e' },
+  { id: 'wdr', label: '穿搭搭配網站', x: 660, y: 74, kind: 'note', above: true },
+  { id: 'sts', label: '個人生活網站群', x: 560, y: 152, kind: 'note', anchor: 's' },
+
+  // Topics 的四篇 —— 正好是「網站開發」關聯欄真的連著的那四篇
+  { id: 'spc', label: '視覺規格配方', x: 250, y: 536, kind: 'note' },
+  { id: 'flm', label: '電影式步進展示', x: 430, y: 556, kind: 'note' },
+  { id: 'vib', label: 'Vibe coding 原則', x: 152, y: 452, kind: 'note', anchor: 'e' },
+  { id: 'vcl', label: 'Vercel 部署', x: 542, y: 516, kind: 'note' },
+];
+
+/** [a, b]。前七條是總地圖的路由，中段是目錄結構，最後四條是筆記自己的 [[關聯]]。 */
+const EDGES: [string, string][] = [
+  ['map', 'ctx'], ['map', 'prj'], ['map', 'top'], ['map', 'jnl'],
+  ['map', 'clp'], ['map', 'rdg'], ['map', 'inb'],
+
+  ['ctx', 'web'], ['ctx', 'me'], ['ctx', 'ai'],
+  ['ctx', 'stk'], ['ctx', 'spt'], ['ctx', 'cry'], ['ctx', 'bld'],
+
+  ['prj', 'esp'], ['prj', 'car'], ['prj', 'wdr'], ['prj', 'sts'],
+
+  ['top', 'spc'], ['top', 'flm'], ['top', 'vib'], ['top', 'vcl'],
+
+  // 「網站開發」的關聯欄 —— 跨群的四條線，讓它讀成圖，不是樹
+  ['web', 'spc'], ['web', 'flm'], ['web', 'vib'], ['web', 'vcl'],
+];
+
+const byId = new Map(NODES.map((n) => [n.id, n]));
+const R: Record<Node['kind'], number> = { root: 5.5, folder: 4, note: 2.8, hot: 4 };
+
+/** 標籤座標：預設節點下方置中，anchor/above 微調避開視窗邊緣與彼此 */
+function labelPos(n: Node) {
+  const r = R[n.kind];
+  if (n.anchor === 's') return { x: n.x + r + 7, y: n.y + 3.5, ta: 'start' };
+  if (n.anchor === 'e') return { x: n.x - r - 7, y: n.y + 3.5, ta: 'end' };
+  if (n.above) return { x: n.x, y: n.y - r - 8, ta: 'middle' };
+  return { x: n.x, y: n.y + r + 14, ta: 'middle' };
+}
+---
+
+<svg
+  class="bg-svg"
+  viewBox="0 0 880 620"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  data-brain
+>
+  {
+    EDGES.map(([a, b]) => {
+      const na = byId.get(a)!;
+      const nb = byId.get(b)!;
+      return (
+        <line
+          class="bg-edge"
+          x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
+          data-a={a} data-b={b}
+        />
+      );
+    })
+  }
+  {
+    NODES.map((n) => {
+      const lp = labelPos(n);
+      return (
+        <g class={`bg-node bg-node--${n.kind}`} data-node={n.id}>
+          {/* 命中區：2.8px 的點根本 hover 不到，墊一顆看不見的大圓 */}
+          <circle class="bg-hit" cx={n.x} cy={n.y} r="16" />
+          <circle class="bg-dot" cx={n.x} cy={n.y} r={R[n.kind]} />
+          <text class="bg-label" x={lp.x} y={lp.y} text-anchor={lp.ta}>
+            {n.label}
+            {n.count != null && <tspan class="bg-count"> {n.count}</tspan>}
+          </text>
+        </g>
+      );
+    })
+  }
+</svg>
+
+<script>
+  /**
+   * hover 一個節點 → 只留它自己與相鄰的線和點，其餘退暗。
+   * 這是 Obsidian graph 的手勢，也是「連結是真的」最快的證明。
+   * 純裝飾：沒有 JS 就是一張靜態圖，一樣成立。
+   */
+  function init() {
+    const svg = document.querySelector<SVGElement>('[data-brain]');
+    if (!svg || svg.hasAttribute('data-live')) return;
+    svg.setAttribute('data-live', '');
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    const edges = Array.from(svg.querySelectorAll<SVGLineElement>('.bg-edge'));
+    const nodes = Array.from(svg.querySelectorAll<SVGGElement>('[data-node]'));
+
+    for (const g of nodes) {
+      const id = g.dataset.node!;
+      g.addEventListener('pointerenter', () => {
+        const near = new Set([id]);
+        for (const e of edges) {
+          const hit = e.dataset.a === id || e.dataset.b === id;
+          e.classList.toggle('is-dim', !hit);
+          if (hit) {
+            near.add(e.dataset.a!);
+            near.add(e.dataset.b!);
+          }
+        }
+        for (const o of nodes) o.classList.toggle('is-dim', !near.has(o.dataset.node!));
+      });
+      g.addEventListener('pointerleave', () => {
+        for (const e of edges) e.classList.remove('is-dim');
+        for (const o of nodes) o.classList.remove('is-dim');
+      });
+    }
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>
+
+<style>
+  .bg-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .bg-edge {
+    stroke: var(--paper-18);
+    stroke-width: 1;
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+
+  .bg-hit {
+    fill: transparent;
+  }
+
+  .bg-dot {
+    fill: var(--paper-64);
+  }
+
+  .bg-node--root .bg-dot {
+    fill: var(--paper);
+  }
+
+  .bg-node--note .bg-dot {
+    fill: var(--paper-38);
+  }
+
+  /* 紅色只給一個點：做這個網站前 AI 先讀的那篇。狀態，不是裝飾。 */
+  .bg-node--hot .bg-dot {
+    fill: var(--red);
+  }
+
+  .bg-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    fill: var(--paper-64);
+  }
+
+  .bg-node--root .bg-label {
+    fill: var(--paper);
+  }
+
+  .bg-node--hot .bg-label {
+    fill: var(--red);
+  }
+
+  .bg-count {
+    font-style: italic;
+    fill: var(--paper-38);
+  }
+
+  .bg-node {
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+
+  .is-dim {
+    opacity: 0.16;
+  }
+</style>
