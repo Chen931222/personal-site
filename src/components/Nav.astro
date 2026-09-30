@@ -41,7 +41,7 @@ const isActive = (href: string) =>
             aria-current={isActive(item.href) ? 'page' : undefined}
           >
             <span class="nav__link-zh">{item.label}</span>
-            <span class="nav__link-latin" aria-hidden="true">
+            <span class="nav__link-latin" lang="en">
               {item.latin}
             </span>
           </a>
@@ -94,7 +94,7 @@ const isActive = (href: string) =>
     align-items: center;
     gap: 5px;
     margin-left: 10px;
-    color: var(--paper-38);
+    color: var(--paper-58);
     opacity: 0;
     transform: translateX(-4px);
     transition:
@@ -203,7 +203,7 @@ const isActive = (href: string) =>
     min-width: 24px;
     min-height: 24px;
     padding-block: 5px;
-    color: var(--paper-38);
+    color: var(--paper-58);
     transition: color var(--t-base) var(--ease-out);
   }
 
@@ -235,14 +235,23 @@ const isActive = (href: string) =>
     color: var(--paper);
   }
 
-  /* 窄螢幕顯示中文（短），寬螢幕顯示拉丁（與 mono 語彙一致） */
+  /* 窄螢幕顯示中文（短），寬螢幕顯示拉丁（與 mono 語彙一致）。
+     寬螢幕的中文**只對視覺隱藏，不能 display:none**：原本拉丁字標了 aria-hidden、
+     中文又被 display:none 拿掉，768px 以上三個連結都沒有名稱（axe link-name，2026-09-30 修）。
+     現在名稱是「作品 WORK」：中文給螢幕閱讀器，拉丁字是畫面上看得到的那個字，
+     語音操作的人唸「WORK」也對得上（WCAG 2.5.3）。 */
   .nav__link-latin {
     display: none;
   }
 
   @media (min-width: 768px) {
     .nav__link-zh {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
     .nav__link-latin {
       display: inline;

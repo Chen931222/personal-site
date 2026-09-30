@@ -61,7 +61,8 @@ export const PROJECTS: Project[] = [
     latin: 'MI ESPANOL',
     kind: '西語學習網站',
     short: 'Mi Español',
-    desc: '八個分區的西班牙語自學站，另配一支九幕的導覽頁。完成度最高，也是唯一打算拿出去賣的。',
+    // 2026-09-29 實測：主站導覽列 9 個分頁（「今天」＋編號 1–8），intro.html 有 10 個 .scene。
+    desc: '九個分區的西班牙語自學站，另配一支十幕的導覽頁。完成度最高，也是唯一打算拿出去賣的。',
     status: 'live',
     href: 'https://mi-espanol-web.vercel.app',
     year: 2026,
@@ -77,7 +78,8 @@ export const PROJECTS: Project[] = [
     latin: 'DREAM GARAGE',
     kind: '360 汽車環景',
     short: '夢想車庫',
-    desc: '八台車的即時 3D 環景。用自己的模型取代預錄影片，繞開了整個素材成本。',
+    // 2026-09-29 實測：線上首頁引用 10 個 .glb，og:description 也自稱 10 台。
+    desc: '十台車的即時 3D 環景。用自己的模型取代預錄影片，繞開了整個素材成本。',
     status: 'live',
     href: 'https://dream-car-garage.chenchen931222.workers.dev',
     year: 2026,
@@ -165,10 +167,12 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'parking-exhibit',
-    name: '挪車的代價',
+    // 2026-09-29 改名（站主決定）：舊名 08-22 起全面停用，
+    // 新名跟停車場站自己的 <title> 與 README 一致。舞台大字放不下八個字，短名另取。
+    name: '停車場即資料結構',
     latin: 'PARKING RECORDS',
     kind: '3D 資料結構展覽',
-    short: '挪車的代價',
+    short: '停車場',
     // 與政策沙盤同一個簽名：把看不見的規則做成看得見的後果。
     // 引擎忠於大二資料結構期末的 Python（堆疊×2＋佇列＋BST），挪車數即時真算。
     desc: '取一台停在巷子深處的車，得先挪開前面四台。大二資料結構期末的停車場系統，改造成 3D 夜間停車場：自動導覽演完挪車之舞，再讓你親手取車，看堆疊與平面車位的帳單即時分流。',

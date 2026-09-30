@@ -16,6 +16,13 @@
  * `sideways-lr` 直到 Safari/iOS 18.4 才支援，所以 @supports 後備是必要的，
  * 不是保險 —— 舊 Safari 會把它當無效宣告，退回 horizontal-tb，
  * 變成一串橫排數字擠在 14px 寬的柱子裡，那不是優雅降級，是壞掉。
+ *
+ * ③ **刻度數字放在 data-run，由 ::before 印出來，不是頁面文字**（2026-09-30 改）。
+ *    它是片邊的花紋，不是內容。放成文字有三個副作用：
+ *    不跑 JS 的爬蟲最前面先讀到 200 個四位數刻度，才輪到名字（2026-09-28 實測）；
+ *    axe 把它當內文量對比（18% 紙色 1.54:1，而 WCAG 1.4.3 對純裝飾本來就不要求）；
+ *    impeccable 把 388 字元的字條當內文，報 wide-tracking。
+ *    畫面上一模一樣：writing-mode、white-space、字距都會繼承到 ::before。
  */
 
 // 一份字條約 2–4 倍視窗高就夠了。參考站做到 31,973px、6,450 個字，是浪費。
@@ -30,14 +37,14 @@ const RUN = seq(0, 480, 10);
 <div class="rails" aria-hidden="true" transition:persist>
   <div class="rail rail--l" data-rail>
     <div class="rail__track" data-rail-track>
-      <div class="rail__strip">{RUN}</div>
-      <div class="rail__strip">{RUN}</div>
+      <div class="rail__strip" data-run={RUN}></div>
+      <div class="rail__strip" data-run={RUN}></div>
     </div>
   </div>
   <div class="rail rail--r" data-rail>
     <div class="rail__track" data-rail-track>
-      <div class="rail__strip">{RUN}</div>
-      <div class="rail__strip">{RUN}</div>
+      <div class="rail__strip" data-run={RUN}></div>
+      <div class="rail__strip" data-run={RUN}></div>
     </div>
   </div>
 </div>
@@ -92,6 +99,10 @@ const RUN = seq(0, 480, 10);
     font-variant-numeric: tabular-nums;
     white-space: pre;
     color: var(--paper-18);
+  }
+
+  .rail__strip::before {
+    content: attr(data-run);
   }
 
   .rail--r .rail__strip {

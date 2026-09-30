@@ -28,6 +28,7 @@ import Placeholder from './Placeholder.astro';
 const total = String(PROJECTS.length).padStart(2, '0');
 ---
 
+<!-- impeccable-disable content-hidden-at-rest, clipped-overflow-container -- ①輪播一次只放一件作品，另外七件的簡介收在 visibility:hidden 是設計本身，不是進場動畫沒跑；換幕由 aria-live 報讀，全部作品同時可讀的版本是 /work/list。②被裁的是上下偷看格，它們本來就要被視窗邊緣切掉一半（translate ±60%），拿掉 clip 會長出捲軸；跟著游標的標籤是 position:fixed，不受這個 clip 影響。兩條寫在同一個註解：Astro 會把相鄰註解壓成一行，檢查器一行只讀第一個（2026-09-30 記） -->
 <section class="stage" data-stage aria-roledescription="作品輪播" aria-label="全部作品">
   <!--
     滿版背景層。
@@ -97,13 +98,13 @@ const total = String(PROJECTS.length).padStart(2, '0');
     <!-- ② 影格 -->
     <div class="gate">
       <p class="gate__rail mono">
-        <span class="gate__rail-l" data-cat>建檔</span>
+        <span class="gate__rail-l" data-cat>{PROJECTS[0]?.cat}</span>
         <span class="gate__marks" aria-hidden="true">
           <span class="gate__mark">v</span>
           <span class="gate__mark">14</span>
           <span class="gate__mark">v</span>
         </span>
-        <span class="gate__rail-r" data-kind>實體藏書</span>
+        <span class="gate__rail-r" data-kind>{PROJECTS[0]?.kind}</span>
       </p>
 
       <!-- 這一層在桌面是 display:contents（等於不存在）。
@@ -282,7 +283,8 @@ const total = String(PROJECTS.length).padStart(2, '0');
    *     巨型名字 6.73:1 ✅ ／ 右欄簡介 4.18:1 ⚠️ ／ 底部分類 2.20:1 ❌
    *
    * 分類那排本來在純底上是 3.4:1，鋪了背景直接掉到 2.2。
-   * 而 --paper-38 這種半透明文字疊在影像上會**跟著背景一起變亮**，
+   * 而 metadata 那級（當時是 --paper-38，2026-09-30 起是 --paper-58）
+   * 這種半透明文字疊在影像上會**跟著背景一起變亮**，
    * 所以只把字調亮救不回來，得讓字底下真的是純底。
    *
    * 把整層用 radial 遮罩收進中央：邊緣完全沒有背景（儀表回到原本的對比），
@@ -419,7 +421,7 @@ const total = String(PROJECTS.length).padStart(2, '0');
   }
 
   .gate__foot-c {
-    color: var(--paper-64);
+    color: var(--paper-78);
     letter-spacing: 0.14em;
     text-align: center;
   }
@@ -438,7 +440,7 @@ const total = String(PROJECTS.length).padStart(2, '0');
     border-radius: 50%;
     font-size: 8px;
     line-height: 1;
-    color: var(--paper-38);
+    color: var(--paper-58);
   }
 
   /* 桌面：這一層不存在，影格直接是 .gate 的 flex 子元素 */
@@ -459,7 +461,7 @@ const total = String(PROJECTS.length).padStart(2, '0');
     height: 15px;
     z-index: 3;
     pointer-events: none;
-    border: 0 solid var(--paper-64);
+    border: 0 solid var(--paper-78);
   }
   .br--tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
   .br--tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
@@ -528,7 +530,7 @@ const total = String(PROJECTS.length).padStart(2, '0');
   .info__d {
     font-size: clamp(0.95rem, 1.05vw, 1.05rem);
     line-height: 1.72;
-    color: var(--paper-64);
+    color: var(--paper-78);
     max-width: 34ch;
   }
 
@@ -539,16 +541,12 @@ const total = String(PROJECTS.length).padStart(2, '0');
     gap: 6px;
   }
 
-  .info__sep {
-    color: var(--paper-18);
-  }
-
   .info__go {
     margin-top: var(--s1);
   }
 
   .btn--off {
-    color: var(--paper-38);
+    color: var(--paper-58);
     cursor: default;
   }
 
@@ -682,7 +680,7 @@ const total = String(PROJECTS.length).padStart(2, '0');
 
   .bar__tc {
     font-variant-numeric: tabular-nums;
-    color: var(--paper-38);
+    color: var(--paper-58);
   }
 
   /* 分類是直排、由下往上長，最後一項落在跟版權、時間碼、出口同一條底線上。
@@ -703,10 +701,11 @@ const total = String(PROJECTS.length).padStart(2, '0');
        否則 WCAG 2.2 SC 2.5.8 的間距例外也救不了（24px 的圓會互相重疊）。 */
     min-height: 24px;
     padding: 0;
-    /* paper-64 而不是 paper-38。這些是**按鈕**不是說明文字 ——
-       WCAG 對文字要求 4.5:1，paper-38 在純底上只有 3.4:1，鋪了背景更掉到 3.06。
+    /* paper-78 而不是 metadata 的 paper-58。這些是**按鈕**不是說明文字，
+       比旁邊的讀數高一級（原本的理由是舊的 paper-38 只有 3.06:1，不及格；
+       2026-09-30 metadata 調到 58 之後已經及格，保留高一級是為了層級）。
        選中與否的區別交給紅點與 paper 全亮，不靠「暗到看不清楚」來表達。 */
-    color: var(--paper-64);
+    color: var(--paper-78);
     transition: color var(--t-base) var(--ease-out);
   }
 
@@ -735,7 +734,7 @@ const total = String(PROJECTS.length).padStart(2, '0');
 
   .fl__n {
     font-style: italic;
-    color: var(--paper-38);
+    color: var(--paper-58);
   }
 
   /* --- 中等寬度：影格讓位，三欄變兩欄 ------------------------------------ */

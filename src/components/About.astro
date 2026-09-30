@@ -85,7 +85,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 <section class="wrap sec wall-sec" id="about" aria-labelledby="ph-h" data-rise>
   <div class="sec__head">
     <h2 class="mono mono--bright" id="ph-h">[ 照片 ]</h2>
-    <p class="mono">01 — {String(shots.length).padStart(2, '0')}</p>
+    <p class="mono">01–{String(shots.length).padStart(2, '0')}</p>
   </div>
 
   <div class="wall">
@@ -138,6 +138,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 </section>
 
 <!-- ── 幕 ④ 學經歷與現在 ──────────────────────────────────────────── -->
+<!-- impeccable-disable all-caps-body -- 學歷列的英文校名（31 字元）是 mono 標籤不是內文，跟站上其他 metadata 同一套全大寫語彙；拆成兩行或改小寫都會讓這一列跟上面兩列不一致（2026-09-29 記） -->
 <section class="wrap sec path-sec" aria-labelledby="path-h" data-rise>
   <div class="sec__head">
     <h2 class="mono mono--bright" id="path-h">[ 學經歷 · 現在 ]</h2>
@@ -275,7 +276,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
   }
 
   .hero__foot-c {
-    color: var(--paper-64);
+    color: var(--paper-78);
     letter-spacing: 0.14em;
     text-align: center;
     overflow: hidden;
@@ -297,7 +298,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     border-radius: 50%;
     font-size: 8px;
     line-height: 1;
-    color: var(--paper-38);
+    color: var(--paper-58);
   }
 
   .hero__frame {
@@ -325,7 +326,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     height: 15px;
     z-index: 3;
     pointer-events: none;
-    border: 0 solid var(--paper-64);
+    border: 0 solid var(--paper-78);
   }
   .br--tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
   .br--tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
@@ -345,7 +346,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
     align-self: start;
     min-height: 26px;
     padding-inline: 3px;
-    color: var(--paper-38);
+    color: var(--paper-58);
     transition:
       color var(--t-base) var(--ease-out),
       opacity var(--t-base) var(--ease-out);
@@ -418,7 +419,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 
   .wall__cap {
     margin-top: var(--s2);
-    color: var(--paper-38);
+    color: var(--paper-58);
   }
 
   @media (max-width: 767px) {
@@ -451,7 +452,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
   }
 
   .who__am {
-    color: var(--paper-38);
+    color: var(--paper-58);
   }
 
   .who__name {
@@ -522,7 +523,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
   }
 
   .creed__s {
-    color: var(--paper-38);
+    color: var(--paper-58);
     font-style: normal;
   }
 
@@ -543,7 +544,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 
   .path__t {
     padding-top: 0.5em;
-    color: var(--paper-64);
+    color: var(--paper-78);
   }
 
   .path__body {
@@ -573,7 +574,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 
   .path__flag {
     padding-top: 0.5em;
-    color: var(--paper-38);
+    color: var(--paper-58);
     white-space: nowrap;
   }
 
@@ -586,7 +587,7 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
 
   .path__i.is-todo .path__title,
   .path__i.is-todo .path__t {
-    color: var(--paper-38);
+    color: var(--paper-58);
   }
 
   @media (max-width: 767px) {
@@ -622,14 +623,14 @@ const pad = (i: number) => String(i + 1).padStart(2, '0');
   .tools__i {
     padding: 7px 11px;
     border: 1px solid var(--paper-08);
-    color: var(--paper-64);
+    color: var(--paper-78);
   }
 
   /* ==== 幕 ⑤ 信箱 ======================================================== */
 
   .end__outro {
     margin-top: var(--s6);
-    color: var(--paper-64);
+    color: var(--paper-78);
   }
 
   .end__mail {

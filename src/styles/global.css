@@ -9,9 +9,15 @@
   /* 色：暗，因為亮的是銀幕 */
   --ink: #0c0c0b;
   --ink-lift: #141412;
+  /* 文字三級，亮度等距（L* 91 / 74 / 57，每級約 17）。層級主要交給字級與字體，
+     不是把字調淡 —— 印刷品只有一種墨，灰字讀不到就等於沒印。
+     58 這級是 metadata 的下限：疊在 /work 背景影片最亮的一幀（Mi Español 米白，
+     暗場後實測底色約 #2E2D29）仍有 4.7:1，純底 5.6:1。2026-09-30 由 64／38 調上來，
+     原本 38 在純底上只有 3.02:1。
+     18、08 只給規線、標尺與佔位框的對角線，不拿來當字。 */
   --paper: #e9e4d8;
-  --paper-64: rgba(233, 228, 216, 0.64);
-  --paper-38: rgba(233, 228, 216, 0.38);
+  --paper-78: rgba(233, 228, 216, 0.78);
+  --paper-58: rgba(233, 228, 216, 0.58);
   --paper-18: rgba(233, 228, 216, 0.18);
   --paper-08: rgba(233, 228, 216, 0.08);
   --red: #ff4433;
@@ -185,7 +191,7 @@ ol {
 .t-body {
   font-size: clamp(0.95rem, 1.1vw, 1.05rem);
   line-height: 1.72;
-  color: var(--paper-64);
+  color: var(--paper-78);
   max-width: 62ch;
 }
 
@@ -202,7 +208,7 @@ ol {
   line-height: 1.4;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--paper-38);
+  color: var(--paper-58);
   font-variant-numeric: tabular-nums;
 }
 
@@ -215,7 +221,7 @@ ol {
 }
 
 .mono--bright {
-  color: var(--paper-64);
+  color: var(--paper-78);
 }
 
 .mono--red {
@@ -268,7 +274,7 @@ ol {
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--paper-64);
+  color: var(--paper-78);
   background: transparent;
   transition:
     background var(--t-base) var(--ease-out),
@@ -289,7 +295,7 @@ ol {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--paper-38);
+  background: var(--paper-58);
   flex: none;
 }
 
@@ -342,7 +348,7 @@ ol {
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--paper-38);
+  color: var(--paper-58);
   pointer-events: none;
 }
 
@@ -354,7 +360,9 @@ ol {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.1em;
-  color: var(--paper-18);
+  /* 原本是規線色 --paper-18（1.64:1）。它是字，跟左下的標籤同一級；
+     要比標籤退一步，靠的是位置（右上角）而不是暗到讀不到。 */
+  color: var(--paper-58);
   pointer-events: none;
 }
 
