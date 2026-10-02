@@ -76,10 +76,11 @@ export const PROJECTS: Project[] = [
     slug: 'dream-car-garage',
     name: '夢想車庫',
     latin: 'DREAM GARAGE',
-    kind: '360 汽車環景',
+    kind: '360 汽車配置器',
     short: '夢想車庫',
-    // 2026-09-29 實測：線上首頁引用 10 個 .glb，og:description 也自稱 10 台。
-    desc: '十台車的即時 3D 環景。用自己的模型取代預錄影片，繞開了整個素材成本。',
+    // 2026-10-02 對過線上站：9 台（2026-10-01 拿掉 R350，授權不允許再散布）。
+    // 模型來自 Sketchfab（CC BY／CC BY-NC-SA），不是我做的；我解掉的是「一個模型取代 2,240 張預拍圖」與首頁的攝影棚渲染。
+    desc: '九台車的 360° 配置器。一個 3D 模型取代 2,240 張預拍圖；首頁的轉盤是我在 Blender 攝影棚裡渲染的。',
     status: 'live',
     href: 'https://dream-car-garage.chenchen931222.workers.dev',
     year: 2026,

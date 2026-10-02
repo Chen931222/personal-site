@@ -26,6 +26,14 @@ const SITES = Object.fromEntries(
   JSON.parse(readFileSync(path.join(here, 'probe.json'), 'utf8')).map((s) => [s.slug, s.url])
 );
 
+/**
+ * 上線前先在本機錄：URL_OVERRIDE=dream-car-garage=http://localhost:8787 node record.mjs dream-car-garage
+ * 可以用逗號串多個。沒設就照 probe.json／SITES 的正式網址。
+ */
+const URL_OVERRIDE = Object.fromEntries(
+  (process.env.URL_OVERRIDE || '').split(',').filter(Boolean).map((kv) => [kv.slice(0, kv.indexOf('=')), kv.slice(kv.indexOf('=') + 1)])
+);
+
 const only = process.argv[2];
 const slugs = readdirSync(path.join(here, 'choreo'))
   .filter((f) => f.endsWith('.mjs') && !f.startsWith('_'))
@@ -82,7 +90,7 @@ mkdirSync(TMPME, { recursive: true });
 const browser = await chromium.launch({ executablePath: CHROME, headless: true });
 
 for (const slug of slugs) {
-  const url = SITES[slug];
+  const url = URL_OVERRIDE[slug] || SITES[slug];
   if (!url) {
     console.log(`SKIP ${slug} —— probe.json 裡沒有這個網址`);
     continue;

@@ -20,6 +20,14 @@ const OUT = path.join(here, '../../public/media');
 const TMP = path.join(here, '.tmp-cover');
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
+/**
+ * 上線前先在本機錄：URL_OVERRIDE=dream-car-garage=http://localhost:8787 node record.mjs dream-car-garage
+ * 可以用逗號串多個。沒設就照 probe.json／SITES 的正式網址。
+ */
+const URL_OVERRIDE = Object.fromEntries(
+  (process.env.URL_OVERRIDE || '').split(',').filter(Boolean).map((kv) => [kv.slice(0, kv.indexOf('=')), kv.slice(kv.indexOf('=') + 1)])
+);
+
 const W = 1200;
 const H = 800; // 3:2
 
@@ -49,8 +57,10 @@ const SITES = [
   {
     slug: 'dream-car-garage',
     url: 'https://dream-car-garage.chenchen931222.workers.dev',
-    // 八台 glb 的載入遠晚於 load 事件；不等的話抓到的是「載入車庫 94%」
+    // 2026-10-02：首頁第一次來會先播 11 秒開場影片，先按「跳過開場」；
+    // 之後是攝影棚轉盤，等載入條收掉、第一台車轉進定位
     async prep(page) {
+      await page.click('#intro-skip', { timeout: 3000 }).catch(() => {});
       await page
         .waitForFunction(() => {
           const l = document.querySelector('#loader');
@@ -141,7 +151,7 @@ for (const s of list) {
   });
   const page = await ctx.newPage();
   try {
-    await page.goto(s.url, { waitUntil: 'load', timeout: 45000 });
+    await page.goto(URL_OVERRIDE[s.slug] || s.url, { waitUntil: 'load', timeout: 45000 });
     // load 不等於畫面可看。networkidle 才等得到字體、圖片與延後抓的資料。
     await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
     await sleep(1500);
